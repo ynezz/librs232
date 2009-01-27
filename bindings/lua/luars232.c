@@ -38,7 +38,7 @@
 #endif
 
 #define MODULE_TIMESTAMP __DATE__ " " __TIME__
-#define MODULE_NAMESPACE "librs232lua"
+#define MODULE_NAMESPACE "luars232"
 #define MODULE_VERSION "1.0.1"
 #define MODULE_BUILD "$Id$"
 #define MODULE_COPYRIGHT "Copyright (c) 2009 Petr Stetiar <ynezz@true.cz>, Gaben Ltd."
@@ -46,7 +46,7 @@
 static struct {
 	const char *name;
 	unsigned long value;
-} librs232_ulong_consts[] = {
+} luars232_ulong_consts[] = {
 	/* baudrates */
 	{ "RS232_BAUD_9600", RS232_BAUD_9600 },
 	{ "RS232_BAUD_19200", RS232_BAUD_19200 },
@@ -93,7 +93,7 @@ BOOL WINAPI DllMain( HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 #endif
 
 /*
- * rs232 = require("librs232lua")
+ * rs232 = require("luars232")
  * error, port = rs232.open(device)
  * error, port = rs232.open("/dev/ttyUSB0")
  */
@@ -403,8 +403,8 @@ static luaL_reg port_functions[] = {
 	{ NULL, NULL }
 };
 
-RS232_LIB int luaopen_librs232lua(lua_State *L);
-RS232_LIB int luaopen_librs232lua(lua_State *L)
+RS232_LIB int luaopen_luars232(lua_State *L);
+RS232_LIB int luaopen_luars232(lua_State *L)
 {
 	int i;
 
@@ -428,9 +428,9 @@ RS232_LIB int luaopen_librs232lua(lua_State *L)
 	lua_rawset(L, -3);
 	lua_pop(L, 1);
 
-	for (i = 0; librs232_ulong_consts[i].name != NULL; i++) {
-		lua_pushstring(L, librs232_ulong_consts[i].name);
-		lua_pushnumber(L, librs232_ulong_consts[i].value);
+	for (i = 0; luars232_ulong_consts[i].name != NULL; i++) {
+		lua_pushstring(L, luars232_ulong_consts[i].name);
+		lua_pushnumber(L, luars232_ulong_consts[i].value);
 		lua_settable(L, -3);
 	}
 
@@ -446,7 +446,7 @@ RS232_LIB int luaopen_librs232lua(lua_State *L)
 	lua_pushstring(L, MODULE_COPYRIGHT);
 	lua_setfield(L, -2, "_COPYRIGHT");
 
-	DBG("[*] luaopen_librs232lua(Version: '%s' Build: '%s' TimeStamp: '%s')\n",
+	DBG("[*] luaopen_luars232(Version: '%s' Build: '%s' TimeStamp: '%s')\n",
 	    MODULE_VERSION, MODULE_BUILD, MODULE_TIMESTAMP);
 	lua_settop(L, 0);
 
