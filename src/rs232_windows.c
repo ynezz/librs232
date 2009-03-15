@@ -368,6 +368,7 @@ rs232_open(struct rs232_port_t *p)
 		return RS232_ERR_OPEN;
 	}
 
+	p->status = RS232_PORT_OPEN;
 	rs232_flush(p);
 
 	GET_PORT_STATE(wx->fd, &wx->old_dcb);
@@ -381,7 +382,6 @@ rs232_open(struct rs232_port_t *p)
 	rs232_set_parity(p, p->parity);
 	rs232_set_stop(p, p->stop);
 	rs232_set_flow(p, p->flow);
-	p->status = RS232_PORT_OPEN;
 
 	return RS232_ERR_NOERROR;
 }
