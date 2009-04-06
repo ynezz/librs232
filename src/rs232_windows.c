@@ -209,6 +209,7 @@ RS232_LIB void
 rs232_in_qeue_clear(struct rs232_port_t *p)
 {
 	/* TODO */
+	UNREFERENCED_PARAMETER(p);
 	DBG("%s\n", "sorry, not implemented yet");
 }
 
@@ -244,6 +245,12 @@ rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
 		   unsigned int buf_len, unsigned int *read_len,
 		   unsigned int timeout)
 {
+	UNREFERENCED_PARAMETER(p);
+	UNREFERENCED_PARAMETER(buf);
+	UNREFERENCED_PARAMETER(timeout);
+	UNREFERENCED_PARAMETER(read_len);
+	UNREFERENCED_PARAMETER(buf_len);
+
 	/* TODO */
 	DBG("%s\n", "sorry, not implemented yet");
 	return RS232_ERR_UNKNOWN;

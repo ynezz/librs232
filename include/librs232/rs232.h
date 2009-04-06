@@ -128,7 +128,7 @@ enum rs232_error_e {
 	RS232_ERR_MAX
 };
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(RS232_STATIC)
 	#ifdef RS232_EXPORT
 		#define RS232_LIB __declspec(dllexport)
 	#else
