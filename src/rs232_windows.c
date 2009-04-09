@@ -27,7 +27,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef UNDER_CE
 #include <errno.h>
+#endif
 
 #include "librs232/rs232.h"
 #include "librs232/rs232_windows.h"

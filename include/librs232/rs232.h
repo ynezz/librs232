@@ -34,10 +34,8 @@
 #define RS232_PORT_LINUX "/dev/ttyS0"
 #define RS232_PORT_WIN32 "COM1"
 
-#ifdef WIN32
-#ifndef snprintf
+#if defined(WIN32) || defined(UNDER_CE)
 #define snprintf _snprintf
-#endif
 #endif
 
 #ifdef RS232_DEBUG
@@ -128,7 +126,7 @@ enum rs232_error_e {
 	RS232_ERR_MAX
 };
 
-#if defined(WIN32) && !defined(RS232_STATIC)
+#if (defined(WIN32) || defined(UNDER_CE)) && !defined(RS232_STATIC)
 	#ifdef RS232_EXPORT
 		#define RS232_LIB __declspec(dllexport)
 	#else
