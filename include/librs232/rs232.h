@@ -35,6 +35,7 @@
 #define RS232_PORT_WIN32 "COM1"
 
 #if defined(WIN32) || defined(UNDER_CE)
+#pragma warning(disable:4996)
 #define snprintf _snprintf
 #endif
 
