@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/DRS232_DEBUG /D_CRT_SECURE_NO_DEPRECATE /DRS232_EXPORT"
 				Optimization="0"
-				AdditionalIncludeDirectories="c:\lua\5.1\include;..\..\..\include"
+				AdditionalIncludeDirectories="..\..\..\include\;c:\lua\5.1\include;..\..\..\..\lua\src\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;librs232lua_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -64,8 +64,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="lua51.lib"
+				OutputFile="$(OutDir)\luars232.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="c:\lua\5.1\lib"
+				AdditionalLibraryDirectories="..\..\..\..\lua\build\win32\Release;c:\lua\5.1\lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -121,7 +122,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/D_CRT_SECURE_NO_DEPRECATE /DRS232_EXPORT"
-				AdditionalIncludeDirectories="c:\lua\5.1\include;..\..\..\include"
+				AdditionalIncludeDirectories="..\..\..\include\;c:\lua\5.1\include;..\..\..\..\lua\src\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;librs232lua_EXPORTS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -142,8 +143,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="lua51.lib"
+				OutputFile="$(OutDir)\luars232.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="c:\lua\5.1\lib"
+				AdditionalLibraryDirectories="..\..\..\..\lua\build\win32\Release;c:\lua\5.1\lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -185,11 +187,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\src\rs232.c"
+				RelativePath="..\..\..\bindings\lua\luars232.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\bindings\lua\rs232_lua.c"
+				RelativePath="..\..\..\src\rs232.c"
 				>
 			</File>
 			<File
