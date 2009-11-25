@@ -403,36 +403,38 @@ static luaL_reg port_functions[] = {
 	{ NULL, NULL }
 };
 
+static int create_metatables(lua_State *L, const char *name, const luaL_reg *methods)
+{
+	if (!luaL_newmetatable (L, name))
+		return 0;
+
+	luaL_openlib (L, NULL, methods, 0);
+
+	lua_pushliteral (L, "__gc");
+	lua_pushcfunction (L, methods->func);
+	lua_settable (L, -3);
+
+	lua_pushliteral (L, "__index");
+	lua_pushvalue (L, -2);
+	lua_settable (L, -3);
+
+	return 1;
+}
+
 RS232_LIB int luaopen_luars232(lua_State *L);
 RS232_LIB int luaopen_luars232(lua_State *L)
 {
 	int i;
-
 	luaL_openlib(L, MODULE_NAMESPACE, port_functions, 0);
-
-	luaL_newmetatable(L, MODULE_NAMESPACE);
-
-	lua_pushstring(L, "__index");
-	lua_newtable(L);
-
-	lua_pushstring(L, "class");
-	lua_pushstring(L, MODULE_NAMESPACE);
-	lua_rawset(L, -3);
-
-	for (i = 0; port_methods[i].name != NULL; i++) {
-		lua_pushstring(L, port_methods[i].name);
-		lua_pushcfunction(L, port_methods[i].func);
-		lua_rawset(L, port_methods[i].name[0] == '_' ? -5 : -3);
-	}
-
-	lua_rawset(L, -3);
-	lua_pop(L, 1);
 
 	for (i = 0; luars232_ulong_consts[i].name != NULL; i++) {
 		lua_pushstring(L, luars232_ulong_consts[i].name);
 		lua_pushnumber(L, luars232_ulong_consts[i].value);
 		lua_settable(L, -3);
 	}
+
+	create_metatables(L, MODULE_NAMESPACE, port_methods);
+	lua_pop (L, 1);
 
 	lua_pushstring(L, MODULE_VERSION);
 	lua_setfield(L, -2, "_VERSION");
@@ -448,7 +450,6 @@ RS232_LIB int luaopen_luars232(lua_State *L)
 
 	DBG("[*] luaopen_luars232(Version: '%s' Build: '%s' TimeStamp: '%s')\n",
 	    MODULE_VERSION, MODULE_BUILD, MODULE_TIMESTAMP);
-	lua_settop(L, 0);
 
 	return 0;
 }
