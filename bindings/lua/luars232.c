@@ -48,6 +48,8 @@ static struct {
 	unsigned long value;
 } luars232_ulong_consts[] = {
 	/* baudrates */
+	{ "RS232_BAUD_2400", RS232_BAUD_2400 },
+	{ "RS232_BAUD_4800", RS232_BAUD_4800 },
 	{ "RS232_BAUD_9600", RS232_BAUD_9600 },
 	{ "RS232_BAUD_19200", RS232_BAUD_19200 },
 	{ "RS232_BAUD_38400", RS232_BAUD_38400 },
