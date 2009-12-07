@@ -40,6 +40,7 @@ struct rs232_windows_t {
 };
 
 #define GET_PORT_TIMEOUTS(fd, t) \
+	memset(t, 0, sizeof(COMMTIMEOUTS)); \
 	if (!GetCommTimeouts(fd, t)) { \
 		DBG("GetCommTimeouts() %s\n", last_error()); \
 		return RS232_ERR_UNKNOWN; \
@@ -52,6 +53,7 @@ struct rs232_windows_t {
 	}
 
 #define GET_PORT_STATE(fd, pdcb) \
+	memset(pdcb, 0, sizeof(DCB)); \
 	if (!GetCommState(fd, pdcb)) { \
 		DBG("GetCommState() %s\n", last_error()); \
 		return RS232_ERR_UNKNOWN; \
