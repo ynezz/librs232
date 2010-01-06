@@ -14,3 +14,14 @@ Release
 *.lib
 *.exp
 *.pdb
+*.in
+*.m4
+autom4te.cache
+bin
+compile
+config.*
+configure
+depcomp
+install-sh
+ltmain.sh
+missing
