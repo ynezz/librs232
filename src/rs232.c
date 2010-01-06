@@ -33,7 +33,7 @@
 
 static const char *
 rs232_baud[] = {
-	"2400"
+	"2400",
 	"4800",
 	"9600",
 	"19200",
@@ -204,11 +204,11 @@ rs232_to_string(struct rs232_port_t *p)
 					" parity: %s, stop bits: %s,"
 					" flow control: %s",
 					p->dev,
-					rs232_baud[p->baud],
-					rs232_data[p->data],
-					rs232_parity[p->parity],
-					rs232_stop[p->stop],
-					rs232_flow[p->flow]);
+					rs232_strbaud(p->baud),
+					rs232_strdata(p->data),
+					rs232_strparity(p->parity),
+					rs232_strstop(p->stop),
+					rs232_strflow(p->flow));
 
 	return str;
 }

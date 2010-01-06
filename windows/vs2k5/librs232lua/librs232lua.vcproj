@@ -142,10 +142,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lua51.lib"
+				AdditionalDependencies="lua5.1.lib"
 				OutputFile="luars232.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\..\build\win32\Release\"
+				AdditionalLibraryDirectories="d:\Lua\5.1\lib;..\..\..\..\..\build\win32\Release\"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -219,7 +219,7 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath="..\..\..\src\resource.rc"
+				RelativePath="..\..\..\src\resource_lua.rc"
 				>
 			</File>
 		</Filter>

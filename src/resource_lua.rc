@@ -18,12 +18,12 @@ BEGIN
         BLOCK "000004b0"
         BEGIN
             VALUE "CompanyName", "Petr Stetiar, Gaben Ltd."
-            VALUE "FileDescription", "librs232 - Library for serial communication over RS232"
+            VALUE "FileDescription", "luars232 - Lua library for serial communication over RS232"
             VALUE "FileVersion", "1, 0, 0, 0"
-            VALUE "InternalName", "librs232"
-            VALUE "LegalCopyright", "Copyright (c) 2008-2010 Petr Stetiar, Gaben Ltd."
-            VALUE "OriginalFilename", "librs232.dll"
-            VALUE "ProductName", "librs232 - Library for serial communication over RS232"
+            VALUE "InternalName", "luars232"
+            VALUE "LegalCopyright", "Copyright (c) 2009 Petr Stetiar, Gaben Ltd."
+            VALUE "OriginalFilename", "luars232.dll"
+            VALUE "ProductName", "luars232 - Library for serial communication over RS232"
             VALUE "ProductVersion", "1, 0, 0, 0"
         END
     END
