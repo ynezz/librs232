@@ -1,0 +1,16 @@
+.svn
+*.o
+*.lo
+*.la
+.deps
+.libs
+*.ncb
+*.sln
+*.suo
+*.user
+Debug
+Release
+*.dll
+*.lib
+*.exp
+*.pdb
