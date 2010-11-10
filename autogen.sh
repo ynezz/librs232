@@ -11,7 +11,4 @@ run ()
     fi
 }
 
-run aclocal
-run libtoolize -f
-run automake -a
-run autoconf
+run autoreconf -iv
