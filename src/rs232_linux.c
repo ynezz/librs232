@@ -417,16 +417,26 @@ rs232_write_timeout(struct rs232_port_t *p, unsigned char *buf,
 unsigned int
 rs232_open(struct rs232_port_t *p)
 {
+	int flags;
 	struct termios term;
 	struct rs232_linux_t *ux = p->pt;
 
 	DBG("p=%p p->pt=%p\n", (void *)p, p->pt);
 
-	ux->fd = open(p->dev, O_RDWR | O_NOCTTY);
+	ux->fd = open(p->dev, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (ux->fd < 0) {
 		DBG("open() %d %s\n", errno, strerror(errno))
 		return RS232_ERR_OPEN;
 	}
+
+	/* 
+	 * On OSX (and maybe on more systems), we need to open() the port with
+	 * O_NDELAY, because otherwise it would block forever waiting for DCD
+	 * signal, so here we restore back to blocking operations.
+	 */
+	flags = fcntl(ux->fd, F_GETFL);
+	flags |= O_NDELAY;
+	fcntl(ux->fd, F_SETFL, flags);
 
 	if (tcflush(ux->fd, TCIOFLUSH) < 0) {
 		DBG("tcflush() %d %s\n", errno, strerror(errno))
