@@ -114,6 +114,16 @@ flow_bits = {
 	"rs232.RS232_FLOW_XON_XOFF",
 }
 
+dtr_bits = {
+	"rs232.RS232_DTR_ON",
+	"rs232.RS232_DTR_OFF",
+}
+
+rts_bits = {
+	"rs232.RS232_RTS_ON",
+	"rs232.RS232_RTS_OFF",
+}
+
 errors = {
 	"rs232.RS232_ERR_NOERROR",
 	"rs232.RS232_ERR_UNKNOWN",
@@ -151,6 +161,8 @@ for _, data in pairs(data_bits) do
 for _, parity in pairs(parity_bits) do
 for _, stop in pairs(stop_bits) do
 for _, flow in pairs(flow_bits) do
+for _, dtr in pairs(dtr_bits) do
+for _, rts in pairs(rts_bits) do
 	assert(
 		test(
 			string.format([[
@@ -163,6 +175,8 @@ for _, flow in pairs(flow_bits) do
 				local pret = rs232.error_tostring(p:set_parity(%s))
 				local sret = rs232.error_tostring(p:set_stop_bits(%s))
 				local fret = rs232.error_tostring(p:set_flow_control(%s))
+				local dtr_ret = rs232.error_tostring(p:set_dtr(%s))
+				local rts_ret = rs232.error_tostring(p:set_rts(%s))
 				 
 				local text = tostring(p)
 				assert(text ~= nil)
@@ -183,6 +197,12 @@ for _, flow in pairs(flow_bits) do
 				if fret ~= "no error" then
 					errors = errors .. "set flow control"
 				end
+				if dtr_ret ~= "no error" then
+					errors = errors .. "set dtr"
+				end
+				if rts_ret ~= "no error" then
+					errors = errors .. "set rts"
+				end
 				 
 				if (string.len(errors) > 0) then
 					print(string.format(" [!] ERROR: %%s (failed: %%s)", text, errors))
@@ -191,9 +211,11 @@ for _, flow in pairs(flow_bits) do
 				end
 				 
 				assert(p:close() == rs232.RS232_ERR_NOERROR)
-				]], port_name, baud, data, parity, stop, flow)
+				]], port_name, baud, data, parity, stop, flow, dtr, rts)
 		)
 	)
+end
+end
 end
 end
 end
@@ -205,6 +227,8 @@ for _, data in pairs(data_bits) do
 for _, parity in pairs(parity_bits) do
 for _, stop in pairs(stop_bits) do
 for _, flow in pairs(flow_bits) do
+for _, dtr in pairs(dtr_bits) do
+for _, rts in pairs(rts_bits) do
 	assert(
 		test(
 			string.format([[
@@ -217,6 +241,8 @@ for _, flow in pairs(flow_bits) do
 				assert(p:set_parity(%s) == rs232.RS232_ERR_NOERROR)
 				assert(p:set_stop_bits(%s) == rs232.RS232_ERR_NOERROR)
 				assert(p:set_flow_control(%s) == rs232.RS232_ERR_NOERROR)
+				assert(p:set_dtr(%s) == rs232.RS232_ERR_NOERROR)
+				assert(p:set_rts(%s) == rs232.RS232_ERR_NOERROR)
 				 
 				local baud = p:baud_rate()
 				local str_baud1 = p:baud_rate_tostring()
@@ -242,6 +268,16 @@ for _, flow in pairs(flow_bits) do
 				local str_flow1 = p:flow_control_tostring()
 				local str_flow2 = p:flow_control_tostring(flow)
 				assert(str_flow1 == str_flow2)
+
+				local dtr = p:dtr()
+				local str_dtr1 = p:dtr_tostring()
+				local str_dtr2 = p:dtr_tostring(dtr)
+				assert(str_dtr1 == str_dtr2)
+
+				local rts = p:rts()
+				local str_rts1 = p:rts_tostring()
+				local str_rts2 = p:rts_tostring(rts)
+				assert(str_rts1 == str_rts2)
 				 
 				local e = p:flush()
 				assert(e == rs232.RS232_ERR_NOERROR)
@@ -291,9 +327,11 @@ for _, flow in pairs(flow_bits) do
 				print("tostring(p): " .. text)
 				 
 				assert(p:close() == rs232.RS232_ERR_NOERROR)
-				]], port_name, baud, data, parity, stop, flow)
+				]], port_name, baud, data, parity, stop, flow, dtr, rts)
 		)
 	)
+end
+end
 end
 end
 end
