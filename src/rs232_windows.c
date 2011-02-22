@@ -100,6 +100,8 @@ rs232_init(void)
 	p->stop = RS232_STOP_1;
 	p->flow = RS232_FLOW_OFF;
 	p->status = RS232_PORT_CLOSED;
+	p->dtr = RS232_DTR_OFF;
+	p->rts = RS232_RTS_OFF;
 
 	wx = (struct rs232_windows_t *) p->pt;
 	wx->r_timeout = 500;
@@ -447,6 +449,68 @@ rs232_set_baud(struct rs232_port_t *p, enum rs232_baud_e baud)
 
 	SET_PORT_STATE(wx->fd, &pdcb);
 	p->baud = baud;
+
+	return RS232_ERR_NOERROR;
+}
+
+RS232_LIB unsigned int
+rs232_set_dtr(struct rs232_port_t *p, enum rs232_dtr_e state)
+{
+	DCB pdcb;
+	struct rs232_windows_t *wx = p->pt;
+
+	DBG("p=%p p->pt=%p dtr=%d (dtr control %s)\n",
+	    (void *)p, p->pt, state, rs232_strdtr(state));
+
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
+	GET_PORT_STATE(wx->fd, &pdcb);
+
+	switch (state) {
+	case RS232_DTR_OFF:
+		pdcb.fDtrControl = DTR_CONTROL_DISABLE;
+		break;
+	case RS232_DTR_ON:
+		pdcb.fDtrControl = DTR_CONTROL_ENABLE;
+		break;
+	default:
+		return RS232_ERR_UNKNOWN;
+	}
+
+	SET_PORT_STATE(wx->fd, &pdcb);
+	p->dtr = state;
+
+	return RS232_ERR_NOERROR;
+}
+
+RS232_LIB unsigned int
+rs232_set_rts(struct rs232_port_t *p, enum rs232_rts_e state)
+{
+	DCB pdcb;
+	struct rs232_windows_t *wx = p->pt;
+
+	DBG("p=%p p->pt=%p rts=%d (rts control %s)\n",
+	    (void *)p, p->pt, state, rs232_strrts(state));
+
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
+	GET_PORT_STATE(wx->fd, &pdcb);
+
+	switch (state) {
+	case RS232_DTR_OFF:
+		pdcb.fRtsControl = RTS_CONTROL_DISABLE;
+		break;
+	case RS232_DTR_ON:
+		pdcb.fRtsControl = RTS_CONTROL_ENABLE;
+		break;
+	default:
+		return RS232_ERR_UNKNOWN;
+	}
+
+	SET_PORT_STATE(wx->fd, &pdcb);
+	p->rts = state;
 
 	return RS232_ERR_NOERROR;
 }

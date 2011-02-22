@@ -71,6 +71,18 @@ rs232_flow[] = {
 };
 
 static const char *
+rs232_dtr[] = {
+	"off",
+	"on",
+};
+
+static const char *
+rs232_rts[] = {
+	"off",
+	"on",
+};
+
+static const char *
 rs232_error[] = {
 	"no error",
 	"unknown error",
@@ -191,6 +203,28 @@ rs232_strflow(unsigned int flow)
 }
 
 RS232_LIB const char *
+rs232_strdtr(unsigned int dtr)
+{
+	DBG("dtr=%d\n", dtr);
+
+	if (dtr >= RS232_DTR_MAX)
+		return NULL;
+
+	return rs232_dtr[dtr];
+}
+
+RS232_LIB const char *
+rs232_strrts(unsigned int rts)
+{
+	DBG("rts=%d\n", rts);
+
+	if (rts >= RS232_RTS_MAX)
+		return NULL;
+
+	return rs232_rts[rts];
+}
+
+RS232_LIB const char *
 rs232_to_string(struct rs232_port_t *p)
 {
 	static char str[RS232_STRLEN+1];
@@ -261,4 +295,18 @@ rs232_port_open(struct rs232_port_t *p)
 {
 	DBG("p=%p p->status=%d\n", (void *)p, p->status);
 	return p->status;
+}
+
+RS232_LIB unsigned int
+rs232_get_dtr(struct rs232_port_t *p)
+{
+	DBG("p=%p dtr: %d\n", (void *)p, p->dtr);
+	return p->dtr;
+}
+
+RS232_LIB unsigned int
+rs232_get_rts(struct rs232_port_t *p)
+{
+	DBG("p=%p rts: %d\n", (void *)p, p->rts);
+	return p->rts;
 }

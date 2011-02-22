@@ -102,6 +102,18 @@ enum rs232_status_e {
 	RS232_PORT_OPEN,
 };
 
+enum rs232_dtr_e {
+	RS232_DTR_OFF,
+	RS232_DTR_ON,
+	RS232_DTR_MAX
+};
+
+enum rs232_rts_e {
+	RS232_RTS_OFF,
+	RS232_RTS_ON,
+	RS232_RTS_MAX
+};
+
 struct rs232_port_t {
 	char dev[RS232_STRLEN_DEVICE+1];
 	void *pt; /* platform specific stuff */
@@ -111,6 +123,8 @@ struct rs232_port_t {
 	enum rs232_flow_e flow;
 	enum rs232_parity_e parity;
 	enum rs232_status_e status;
+	enum rs232_dtr_e dtr;
+	enum rs232_rts_e rts;
 };
 
 enum rs232_error_e {
@@ -151,12 +165,16 @@ RS232_LIB unsigned int rs232_set_stop(struct rs232_port_t *p, unsigned int stop)
 RS232_LIB unsigned int rs232_set_data(struct rs232_port_t *p, unsigned int data);
 RS232_LIB unsigned int rs232_set_parity(struct rs232_port_t *p, unsigned int parity);
 RS232_LIB unsigned int rs232_set_flow(struct rs232_port_t *p, unsigned int flow);
+RS232_LIB unsigned int rs232_set_dtr(struct rs232_port_t *p, unsigned int dtr);
+RS232_LIB unsigned int rs232_set_rts(struct rs232_port_t *p, unsigned int rts);
 RS232_LIB const char * rs232_get_device(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_get_baud(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_get_stop(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_get_data(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_get_parity(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_get_flow(struct rs232_port_t *p);
+RS232_LIB unsigned int rs232_get_dtr(struct rs232_port_t *p);
+RS232_LIB unsigned int rs232_get_rts(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len, unsigned int *read_len);
 RS232_LIB unsigned int rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len, unsigned int *read_len, unsigned int timeout);
 RS232_LIB unsigned int rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len, unsigned int *read_len, unsigned int timeout);
@@ -171,5 +189,7 @@ RS232_LIB const char * rs232_strdata(unsigned int data);
 RS232_LIB const char * rs232_strparity(unsigned int parity);
 RS232_LIB const char * rs232_strstop(unsigned int stop);
 RS232_LIB const char * rs232_strflow(unsigned int flow);
+RS232_LIB const char * rs232_strdtr(unsigned int dtr);
+RS232_LIB const char * rs232_strrts(unsigned int rts);
 
 #endif /* __LIBRS232_H__ */

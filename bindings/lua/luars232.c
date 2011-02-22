@@ -40,7 +40,7 @@
 #define MODULE_TIMESTAMP __DATE__ " " __TIME__
 #define MODULE_NAMESPACE "luars232"
 #define MODULE_VERSION "1.0.0"
-#define MODULE_BUILD "$Id: luars232.c 13 2010-01-06 09:15:31Z sp $"
+#define MODULE_BUILD "$Id: luars232.c 14 2011-02-18 09:39:55Z cv $"
 #define MODULE_COPYRIGHT "Copyright (c) 2009 Petr Stetiar <ynezz@true.cz>, Gaben Ltd."
 
 static struct {
@@ -71,6 +71,11 @@ static struct {
 	{ "RS232_FLOW_OFF", RS232_FLOW_OFF },
 	{ "RS232_FLOW_HW", RS232_FLOW_HW },
 	{ "RS232_FLOW_XON_XOFF", RS232_FLOW_XON_XOFF },
+	/* DTR and RTS */
+	{ "RS232_DTR_ON", RS232_DTR_ON },
+	{ "RS232_DTR_OFF", RS232_DTR_OFF },
+	{ "RS232_RTS_ON", RS232_RTS_ON },
+	{ "RS232_RTS_OFF", RS232_RTS_OFF },
 	/* errors */
 	{ "RS232_ERR_NOERROR", RS232_ERR_NOERROR },
 	{ "RS232_ERR_UNKNOWN", RS232_ERR_UNKNOWN },
@@ -356,18 +361,24 @@ FN_SET_PORT(data)
 FN_SET_PORT(stop)
 FN_SET_PORT(parity)
 FN_SET_PORT(flow)
+FN_SET_PORT(dtr)
+FN_SET_PORT(rts)
 
 FN_GET_PORT(baud)
 FN_GET_PORT(data)
 FN_GET_PORT(stop)
 FN_GET_PORT(parity)
 FN_GET_PORT(flow)
+FN_GET_PORT(dtr)
+FN_GET_PORT(rts)
 
 FN_GET_PORT_STRING(baud)
 FN_GET_PORT_STRING(data)
 FN_GET_PORT_STRING(stop)
 FN_GET_PORT_STRING(parity)
 FN_GET_PORT_STRING(flow)
+FN_GET_PORT_STRING(dtr)
+FN_GET_PORT_STRING(rts)
 
 static luaL_reg port_methods[] = {
 	{ "__tostring", lua_port_tostring },
@@ -397,6 +408,14 @@ static luaL_reg port_methods[] = {
 	{ "flow_control", lua_port_get_flow },
 	{ "flow_control_tostring", lua_port_get_strflow },
 	{ "set_flow_control", lua_port_set_flow },
+	/* dtr */
+	{ "dtr", lua_port_get_dtr },
+	{ "dtr_tostring", lua_port_get_strdtr },
+	{ "set_dtr", lua_port_set_dtr },
+	/* rts */
+	{ "rts", lua_port_get_rts },
+	{ "rts_tostring", lua_port_get_strrts },
+	{ "set_rts", lua_port_set_rts },
 	{ NULL, NULL }
 };
 
