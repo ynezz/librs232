@@ -63,6 +63,8 @@ rs232_init(void)
 	p->stop = RS232_STOP_1;
 	p->flow = RS232_FLOW_OFF;
 	p->status = RS232_PORT_CLOSED;
+	p->dtr = RS232_DTR_OFF;
+	p->rts = RS232_RTS_OFF;
 
 	return p;
 }
@@ -525,6 +527,82 @@ rs232_set_baud(struct rs232_port_t *p, enum rs232_baud_e baud)
 
 	SET_PORT_STATE(ux->fd, &term)
 	p->baud = baud;
+
+	return RS232_ERR_NOERROR;
+}
+
+unsigned int
+rs232_set_dtr(struct rs232_port_t *p, enum rs232_dtr_e state)
+{
+	int ret;
+	int set;
+	struct rs232_linux_t *ux = p->pt;
+
+	DBG("p=%p p->pt=%p dtr=%d (dtr control %s)\n",
+	    (void *)p, p->pt, state, rs232_strdtr(state));
+
+	ret = ioctl(ux->fd, TIOCMGET, &set);
+	if (ret == -1) {
+		DBG("%s\n", "TIOCMGET RS232_ERR_IOCTL");
+		return RS232_ERR_IOCTL;
+	}
+
+	switch (state) {
+	case RS232_DTR_OFF:
+		set &= ~TIOCM_DTR;
+		break;
+	case RS232_DTR_ON:
+		set |= TIOCM_DTR;
+		break;
+	default:
+		return RS232_ERR_UNKNOWN;
+	}
+
+	ret = ioctl(ux->fd, TIOCMSET, &set);
+	if (ret == -1) {
+		DBG("%s\n", "TIOCMSET RS232_ERR_IOCTL");
+		return RS232_ERR_IOCTL;
+	}
+	
+	p->dtr = state;
+
+	return RS232_ERR_NOERROR;
+}
+
+unsigned int
+rs232_set_rts(struct rs232_port_t *p, enum rs232_rts_e state)
+{
+	int ret;
+	int set;
+	struct rs232_linux_t *ux = p->pt;
+
+	DBG("p=%p p->pt=%p rts=%d (rts control %s)\n",
+	    (void *)p, p->pt, state, rs232_strrts(state));
+
+	ret = ioctl(ux->fd, TIOCMGET, &set);
+	if (ret == -1) {
+		DBG("%s\n", "TIOCMGET RS232_ERR_IOCTL");
+		return RS232_ERR_IOCTL;
+	}
+
+	switch (state) {
+	case RS232_RTS_OFF:
+		set &= ~TIOCM_RTS;
+		break;
+	case RS232_RTS_ON:
+		set |= TIOCM_RTS;
+		break;
+	default:
+		return RS232_ERR_UNKNOWN;
+	}
+
+	ret = ioctl(ux->fd, TIOCMSET, &set);
+	if (ret == -1) {
+		DBG("%s\n", "TIOCMSET RS232_ERR_IOCTL");
+		return RS232_ERR_IOCTL;
+	}
+	
+	p->rts = state;
 
 	return RS232_ERR_NOERROR;
 }
