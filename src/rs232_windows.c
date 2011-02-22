@@ -357,20 +357,38 @@ rs232_write_timeout(struct rs232_port_t *p, unsigned char *buf,
 	return RS232_ERR_NOERROR;
 }
 
+static char *
+fix_device_name(char *device)
+{
+	char *s = device;
+	static char ret[RS232_STRLEN_DEVICE+1] = {0};
+
+	while (*s && !isdigit(*s))
+		s++;
+
+	if (s && (atoi(s) > 0)) {
+		snprintf(ret, RS232_STRLEN_DEVICE, "\\\\.\\COM%s", s);
+		return ret;
+	}
+
+	return device;
+}
+
 RS232_LIB unsigned int
 rs232_open(struct rs232_port_t *p)
 {
-	wchar_t *wname = a2w(p->dev);
+	wchar_t *wname = a2w(fix_device_name(p->dev));
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p\n", (void *)p, p->pt);
+	DBG("p=%p p->pt=%p name='%s' fix='%s'\n",
+	    (void *)p, p->pt, p->dev, fix_device_name(p->dev));
 
 	if (wname == NULL)
 		return RS232_ERR_UNKNOWN;
 
 	wx->fd = CreateFile(wname, GENERIC_READ | GENERIC_WRITE,
-				FILE_SHARE_READ | FILE_SHARE_WRITE,
-				NULL, OPEN_EXISTING, 0, NULL);
+			    FILE_SHARE_READ | FILE_SHARE_WRITE,
+			    NULL, OPEN_EXISTING, 0, NULL);
 
 	if (wname)
 		free(wname);
