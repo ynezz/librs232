@@ -39,8 +39,8 @@
 
 #define MODULE_TIMESTAMP __DATE__ " " __TIME__
 #define MODULE_NAMESPACE "luars232"
-#define MODULE_VERSION "1.0.0"
-#define MODULE_BUILD "$Id: luars232.c 14 2011-02-18 09:39:55Z cv $"
+#define MODULE_VERSION "1.0.1"
+#define MODULE_BUILD "$Id: luars232.c 15 2011-02-23 09:02:20Z sp $"
 #define MODULE_COPYRIGHT "Copyright (c) 2009 Petr Stetiar <ynezz@true.cz>, Gaben Ltd."
 
 static struct {
