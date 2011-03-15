@@ -59,6 +59,7 @@ const char* rs232_ascii_dump(const void *data, unsigned int len);
 
 
 enum rs232_baud_e {
+	RS232_BAUD_300,
 	RS232_BAUD_2400,
 	RS232_BAUD_4800,
 	RS232_BAUD_9600,
