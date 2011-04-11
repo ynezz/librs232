@@ -440,6 +440,9 @@ rs232_set_baud(struct rs232_port_t *p, enum rs232_baud_e baud)
 	GET_PORT_STATE(wx->fd, &pdcb);
 
 	switch (baud) {
+	case RS232_BAUD_300:
+		pdcb.BaudRate = CBR_300;
+		break;
 	case RS232_BAUD_2400:
 		pdcb.BaudRate = CBR_2400;
 		break;
