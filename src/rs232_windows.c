@@ -725,3 +725,13 @@ rs232_close(struct rs232_port_t *p)
 
 	return RS232_ERR_NOERROR;
 }
+
+RS232_LIB unsigned int
+rs232_fd(struct rs232_port_t *p)
+{
+	struct rs232_windows_t *wx = p->pt;
+
+	DBG("p=%p p->pt=%p wx->fd=%d\n", (void *)p, p->pt, wx->fd);
+
+	return (unsigned int) wx->fd;
+}
