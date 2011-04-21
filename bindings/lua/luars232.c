@@ -48,6 +48,7 @@ static struct {
 	unsigned long value;
 } luars232_ulong_consts[] = {
 	/* baudrates */
+	{ "RS232_BAUD_300", RS232_BAUD_300 },
 	{ "RS232_BAUD_2400", RS232_BAUD_2400 },
 	{ "RS232_BAUD_4800", RS232_BAUD_4800 },
 	{ "RS232_BAUD_9600", RS232_BAUD_9600 },
@@ -312,6 +313,13 @@ static int lua_port_device(lua_State *L)
 	return 1;
 }
 
+static int lua_port_fd(lua_State *L)
+{
+	struct rs232_port_t *p = (struct rs232_port_t*) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	lua_pushinteger(L, rs232_fd(p));
+	return 1;
+}
+
 /*
  * print(port:error_tostring(error))
  */
@@ -388,6 +396,7 @@ static luaL_reg port_methods[] = {
 	{ "close", lua_port_close },
 	{ "flush", lua_port_flush },
 	{ "device", lua_port_device },
+	{ "fd", lua_port_fd },
 	/* baud */
 	{ "baud_rate", lua_port_get_baud },
 	{ "baud_rate_tostring", lua_port_get_strbaud },

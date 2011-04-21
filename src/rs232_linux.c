@@ -772,3 +772,13 @@ rs232_close(struct rs232_port_t *p)
 	p->status = RS232_PORT_CLOSED;
 	return RS232_ERR_NOERROR;
 }
+
+unsigned int
+rs232_fd(struct rs232_port_t *p)
+{
+	struct rs232_linux_t *ux = p->pt;
+
+	DBG("p=%p p->pt=%p ux->fd=%d\n", (void *)p, p->pt, ux->fd);
+
+	return (unsigned int) ux->fd;
+}
