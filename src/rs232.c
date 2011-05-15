@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
+ * Copyright (c) 2011 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -41,6 +41,7 @@ rs232_baud[] = {
 	"38400",
 	"57600",
 	"115200",
+	"460800",
 };
 
 static const char *

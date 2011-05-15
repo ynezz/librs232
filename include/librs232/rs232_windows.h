@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
+ * Copyright (c) 2011 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -28,6 +28,10 @@
 #define __LIBRS232_WINDOWS_H__
 
 #include <windows.h>
+
+#ifndef CBR_460800
+#define CBR_460800 460800
+#endif
 
 struct rs232_windows_t {
 	HANDLE fd;

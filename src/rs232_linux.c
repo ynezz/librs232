@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
+ * Copyright (c) 2011 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -54,6 +54,7 @@ rs232_init(void)
 
 	DBG("p=%p p->pt=%p\n", (void *)p, p->pt);
 
+	memset(p->pt, 0, sizeof(struct rs232_linux_t));
 	memset(p->dev, 0, RS232_STRLEN_DEVICE+1);
 	strncpy(p->dev, RS232_PORT_LINUX, RS232_STRLEN_DEVICE);
 
@@ -76,8 +77,11 @@ rs232_end(struct rs232_port_t *p)
 
 	DBG("p=%p p->pt=%p\n", (void *)p, p->pt);
 
-	if (!rs232_port_open(p))
+	if (!rs232_port_open(p)) {
+		free(p->pt);
+		free(p);
 		return;
+	}
 
 	rs232_flush(p);
 
@@ -488,7 +492,8 @@ rs232_set_baud(struct rs232_port_t *p, enum rs232_baud_e baud)
 	struct termios term;
 	struct rs232_linux_t *ux = p->pt;
 
-	DBG("p=%p p->pt=%p baud=%d\n", (void *)p, p->pt, baud);
+	DBG("p=%p p->pt=%p baud=%d (%s bauds)\n",
+	    (void *)p, p->pt, baud, rs232_strbaud(baud));
 
 	GET_PORT_STATE(ux->fd, &term)
 
@@ -524,6 +529,10 @@ rs232_set_baud(struct rs232_port_t *p, enum rs232_baud_e baud)
 	case RS232_BAUD_115200:
 		cfsetispeed(&term, B115200);
 		cfsetospeed(&term, B115200);
+		break;
+	case RS232_BAUD_460800:
+		cfsetispeed(&term, B460800);
+		cfsetospeed(&term, B460800);
 		break;
 	default:
 		return RS232_ERR_UNKNOWN;
@@ -617,7 +626,8 @@ rs232_set_parity(struct rs232_port_t *p, enum rs232_parity_e parity)
 	struct termios term;
 	struct rs232_linux_t *ux = p->pt;
 
-	DBG("p=%p p->pt=%p parity=%d\n", (void *)p, p->pt, parity);
+	DBG("p=%p p->pt=%p parity=%d (parity %s)\n",
+	    (void *)p, p->pt, parity, rs232_strparity(parity));
 
 	GET_PORT_STATE(ux->fd, &term)
 
@@ -648,7 +658,8 @@ rs232_set_stop(struct rs232_port_t *p, enum rs232_stop_e stop)
 	struct termios term;
 	struct rs232_linux_t *ux = p->pt;
 
-	DBG("p=%p p->pt=%p stop=%d\n", (void *)p, p->pt, stop);
+	DBG("p=%p p->pt=%p stop=%d (%s stop bits)\n",
+	    (void *)p, p->pt, stop, rs232_strstop(stop));
 
 	GET_PORT_STATE(ux->fd, &term)
 	term.c_cflag &= ~CSTOPB;
@@ -675,7 +686,8 @@ rs232_set_data(struct rs232_port_t *p, enum rs232_data_e data)
 	struct termios term;
 	struct rs232_linux_t *ux = p->pt;
 
-	DBG("p=%p p->pt=%p data=%d\n", (void *)p, p->pt, data);
+	DBG("p=%p p->pt=%p data=%d (%s data bits)\n",
+	    (void *)p, p->pt, data, rs232_strdata(data));
 
 	GET_PORT_STATE(ux->fd, &term)
 	term.c_cflag &= ~CSIZE;
@@ -709,7 +721,8 @@ rs232_set_flow(struct rs232_port_t *p, enum rs232_flow_e flow)
 	struct termios term;
 	struct rs232_linux_t *ux = p->pt;
 
-	DBG("p=%p p->pt=%p flow=%d\n", (void *)p, p->pt, flow);
+	DBG("p=%p p->pt=%p flow=%d (flow control %s)\n",
+	    (void *)p, p->pt, flow, rs232_strflow(flow));
 
 	GET_PORT_STATE(ux->fd, &term)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
+ * Copyright (c) 2011 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -165,8 +165,11 @@ rs232_end(struct rs232_port_t *p)
 
 	DBG("p=%p p->pt=%p\n", (void *)p, p->pt);
 
-	if (!rs232_port_open(p))
+	if (!rs232_port_open(p)) {
+		free(p->pt);
+		free(p);
 		return;
+	}
 
 	rs232_flush(p);
 
@@ -463,6 +466,9 @@ rs232_set_baud(struct rs232_port_t *p, enum rs232_baud_e baud)
 		break;
 	case RS232_BAUD_115200:
 		pdcb.BaudRate = CBR_115200;
+		break;
+	case RS232_BAUD_460800:
+		pdcb.BaudRate = CBR_460800;
 		break;
 	default:
 		return RS232_ERR_UNKNOWN;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
+ * Copyright (c) 2011 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -39,9 +39,9 @@
 
 #define MODULE_TIMESTAMP __DATE__ " " __TIME__
 #define MODULE_NAMESPACE "luars232"
-#define MODULE_VERSION "1.0.1"
+#define MODULE_VERSION "1.0.2"
 #define MODULE_BUILD "$Id: luars232.c 15 2011-02-23 09:02:20Z sp $"
-#define MODULE_COPYRIGHT "Copyright (c) 2009 Petr Stetiar <ynezz@true.cz>, Gaben Ltd."
+#define MODULE_COPYRIGHT "Copyright (c) 2011 Petr Stetiar <ynezz@true.cz>, Gaben Ltd."
 
 static struct {
 	const char *name;
@@ -56,6 +56,7 @@ static struct {
 	{ "RS232_BAUD_38400", RS232_BAUD_38400 },
 	{ "RS232_BAUD_57600", RS232_BAUD_57600 },
 	{ "RS232_BAUD_115200", RS232_BAUD_115200 },
+	{ "RS232_BAUD_460800", RS232_BAUD_460800 },
 	/* databits */
 	{ "RS232_DATA_5", RS232_DATA_5 },
 	{ "RS232_DATA_6", RS232_DATA_6 },
