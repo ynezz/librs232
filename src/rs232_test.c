@@ -57,7 +57,6 @@ unsigned int rs232_simple_test(void)
 #else
 	rs232_set_device(p, "/dev/ttyUSB0");
 #endif
-	rs232_end(p);
 	ret = rs232_open(p);
 	if (ret)
 		return err(ret);
