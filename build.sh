@@ -1,6 +1,6 @@
 #!/bin/sh
 make distclean
 . autogen.sh
-./configure --prefix=$PWD/bin --enable-debug
-#./configure --prefix=$PWD/bin
+#./configure --prefix=$PWD/inst-dbg --enable-debug
+./configure --prefix=$PWD/inst
 make install

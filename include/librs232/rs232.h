@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
+ * Copyright (c) 2011 Petr Stetiar <ynezz@true.cz>, Gaben Ltd.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -67,6 +67,7 @@ enum rs232_baud_e {
 	RS232_BAUD_38400,
 	RS232_BAUD_57600,
 	RS232_BAUD_115200,
+	RS232_BAUD_460800,
 	RS232_BAUD_MAX
 };
 
