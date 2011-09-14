@@ -105,6 +105,7 @@ if test "x$enable_lua" = "xyes" ; then
         if test "x$ac_found_lua_header" = "xyes" -a "x$ac_found_liblua_header" = "xyes"; then
             LUA_CFLAGS="$CFLAGS"
         fi
+        LDFLAGS="$LDFLAGS -lm"
         for l in "$lua_suffix" "" "51" "5.1" "50" "5.0" ; do
             AC_CHECK_LIB(lua$l,lua_call,ac_found_lua_lib="yes",ac_found_lua_lib="no")
             if test "x$ac_found_lua_lib" = "xyes" ; then
