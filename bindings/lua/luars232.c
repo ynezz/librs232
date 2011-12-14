@@ -34,7 +34,7 @@
 #ifdef WIN32
 #include "librs232/rs232_windows.h"
 #else
-#include "librs232/rs232_linux.h"
+#include "librs232/rs232_posix.h"
 #endif
 
 #define MODULE_TIMESTAMP __DATE__ " " __TIME__
