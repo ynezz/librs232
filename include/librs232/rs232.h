@@ -31,7 +31,13 @@
 
 #define RS232_STRLEN 512
 #define RS232_STRLEN_DEVICE 30
-#define RS232_PORT_LINUX "/dev/ttyS0"
+
+#ifdef __linux__
+#define RS232_PORT_POSIX "/dev/ttyS0"
+#else
+#define RS232_PORT_POSIX "/dev/cua00"
+#endif /* __linux__ */
+
 #define RS232_PORT_WIN32 "COM1"
 
 #if defined(WIN32) || defined(UNDER_CE)

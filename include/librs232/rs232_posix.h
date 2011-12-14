@@ -24,12 +24,16 @@
  *
  */
 
-#ifndef __LIBRS232_LINUX_H__
-#define __LIBRS232_LINUX_H__
+#ifndef __LIBRS232_POSIX_H__
+#define __LIBRS232_POSIX_H__
 
 #include <termios.h>
 
-struct rs232_linux_t {
+#ifndef B460800
+#define B460800 460800
+#endif
+
+struct rs232_posix_t {
 	int fd;
 	struct termios oldterm;
 };
@@ -46,4 +50,4 @@ struct rs232_linux_t {
 		return RS232_ERR_CONFIG; \
 	} \
 
-#endif /* __LIBRS232_LINUX_H__ */
+#endif /* __LIBRS232_POSIX_H__ */
