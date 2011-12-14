@@ -3,7 +3,7 @@ rs232 = require("luars232")
 -- Linux
 -- port_name = "/dev/ttyS0"
 
--- OpenBSD
+-- (Open)BSD
 -- port_name = "/dev/cua00"
 
 -- Windows
