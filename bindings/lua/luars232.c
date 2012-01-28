@@ -31,12 +31,6 @@
 
 #include "librs232/rs232.h"
 
-#ifdef WIN32
-#include "librs232/rs232_windows.h"
-#else
-#include "librs232/rs232_posix.h"
-#endif
-
 #define MODULE_TIMESTAMP __DATE__ " " __TIME__
 #define MODULE_NAMESPACE "luars232"
 #define MODULE_VERSION "1.0.2"

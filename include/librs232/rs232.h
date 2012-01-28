@@ -41,8 +41,11 @@
 #define RS232_PORT_WIN32 "COM1"
 
 #if defined(WIN32) || defined(UNDER_CE)
-#pragma warning(disable:4996)
-#define snprintf _snprintf
+ #include "librs232/rs232_windows.h"
+ #pragma warning(disable:4996)
+ #define snprintf _snprintf
+#else
+ #include "librs232/rs232_posix.h"
 #endif
 
 #ifdef RS232_DEBUG

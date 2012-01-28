@@ -33,7 +33,6 @@
 #endif
 
 #include "librs232/rs232.h"
-#include "librs232/rs232_windows.h"
 
 static wchar_t *
 a2w(const char *astr)

@@ -38,7 +38,6 @@
 #include <unistd.h>
 
 #include "librs232/rs232.h"
-#include "librs232/rs232_posix.h"
 
 struct rs232_port_t *
 rs232_init(void)
