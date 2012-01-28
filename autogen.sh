@@ -11,4 +11,4 @@ run ()
     fi
 }
 
-run autoreconf -iv
+run autoreconf --force --install --symlink --verbose
