@@ -33,7 +33,7 @@
 
 #define MODULE_TIMESTAMP __DATE__ " " __TIME__
 #define MODULE_NAMESPACE "luars232"
-#define MODULE_VERSION "1.0.2"
+#define MODULE_VERSION "1.0.3"
 #define MODULE_BUILD "$Id: luars232.c 15 2011-02-23 09:02:20Z sp $"
 #define MODULE_COPYRIGHT "Copyright (c) 2011 Petr Stetiar <ynezz@true.cz>, Gaben Ltd."
 
