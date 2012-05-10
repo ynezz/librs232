@@ -190,7 +190,7 @@ static int lua_port_read(lua_State *L)
 	DBG("ret=%d hex='%s' bytes_read=%d\n",
 	    ret, rs232_hex_dump(data, bytes_read), bytes_read);
 
-	lua_pushinteger(L, RS232_ERR_NOERROR);
+	lua_pushinteger(L, ret);
 	if (bytes_read > 0)
 		lua_pushlstring(L, (char *) data, bytes_read);
 	else
