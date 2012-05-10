@@ -49,23 +49,32 @@
 #endif
 
 #ifdef RS232_DEBUG
-#define DBG(x, ...) \
-{ \
-	time_t now = time(NULL); \
-	struct tm* t = localtime(&now); \
-	fprintf(stderr, "[%02d:%02d:%02d] %s(%d):%s: " x, t->tm_hour, t->tm_min, \
-		t->tm_sec,  __FILE__, __LINE__, __FUNCTION__, ## __VA_ARGS__); \
-}
-
 const char* rs232_hex_dump(const void *data, unsigned int len);
 const char* rs232_ascii_dump(const void *data, unsigned int len);
+
+ #if defined(WIN32) || defined(UNDER_CE)
+  #include <windows.h>
+  #define DBG(x, ...) \
+ 		{ \
+			SYSTEMTIME t; \
+			GetLocalTime(&t); \
+			fprintf(stderr, "[%02d:%02d:%02d.%03d] %s(%d):%s: " x, t.wHour, t.wMinute, \
+				t.wSecond, t.wMilliseconds,  __FILE__, __LINE__, __FUNCTION__, ## __VA_ARGS__); \
+		}
+ #else
+  #define DBG(x, ...) \
+		{ \
+			time_t now = time(NULL); \
+			struct tm* t = localtime(&now); \
+			fprintf(stderr, "[%02d:%02d:%02d] %s(%d):%s: " x, t->tm_hour, t->tm_min, \
+				t->tm_sec,  __FILE__, __LINE__, __FUNCTION__, ## __VA_ARGS__); \
+		}
+ #endif /* #if defined(WIN32) || defined(UNDER_CE) */
 #else
-#define DBG(x, ...)
-#define rs232_hex_dump(x, y)
-#define rs232_ascii_dump(x, y)
-#endif
-
-
+ #define DBG(x, ...)
+ #define rs232_hex_dump(x, y)
+ #define rs232_ascii_dump(x, y)
+#endif /* RS232_DEBUG */
 
 enum rs232_baud_e {
 	RS232_BAUD_300,
