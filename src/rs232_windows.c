@@ -295,7 +295,10 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 	DBG("read_len=%d hex='%s' ascii='%s'\n", r, rs232_hex_dump(buf, r),
 	    rs232_ascii_dump(buf, r));
 
-	return RS232_ERR_NOERROR;
+	/* TODO - This is lame, since we rely on the fact, that if we read 0 bytes,
+	 * that the read probably timeouted. So we should rather measure the reading
+	 * interval or rework it using overlapped I/O */
+	return *read_len == 0 ? RS232_ERR_TIMEOUT : RS232_ERR_NOERROR;
 }
 
 RS232_LIB unsigned int
