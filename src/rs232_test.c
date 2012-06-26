@@ -58,8 +58,10 @@ unsigned int rs232_simple_test(void)
 	rs232_set_device(p, "/dev/ttyUSB0");
 #endif
 	ret = rs232_open(p);
-	if (ret)
+	if (ret) {
+		rs232_end(p);
 		return err(ret);
+	}
 
 	rs232_set_baud(p, RS232_BAUD_115200);
 	printf("[*] port settings: %s\n", rs232_to_string(p));
