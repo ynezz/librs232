@@ -372,7 +372,12 @@ fix_device_name(char *device)
 		s++;
 
 	if (s && (atoi(s) > 0)) {
+		/* meh, Windows CE is special and can't handle URN path, just COM1: format */
+#ifndef UNDER_CE
 		snprintf(ret, RS232_STRLEN_DEVICE, "\\\\.\\COM%s", s);
+#else
+		snprintf(ret, RS232_STRLEN_DEVICE, "COM%s:", s);
+#endif
 		return ret;
 	}
 
