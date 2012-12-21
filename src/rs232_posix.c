@@ -440,7 +440,7 @@ rs232_open(struct rs232_port_t *p)
 	 * signal, so here we restore back to blocking operations.
 	 */
 	flags = fcntl(ux->fd, F_GETFL);
-	flags |= O_NDELAY;
+	flags &= ~O_NDELAY;
 	fcntl(ux->fd, F_SETFL, flags);
 
 	if (tcflush(ux->fd, TCIOFLUSH) < 0) {
