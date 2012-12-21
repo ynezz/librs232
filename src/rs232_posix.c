@@ -341,7 +341,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 }
 
 unsigned int
-rs232_write(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
+rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len,
 		unsigned int *write_len)
 {
 	int w;
@@ -371,7 +371,7 @@ rs232_write(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
 }
 
 unsigned int
-rs232_write_timeout(struct rs232_port_t *p, unsigned char *buf,
+rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 			unsigned int buf_len, unsigned int *write_len,
 			unsigned int timeout)
 {
@@ -440,7 +440,7 @@ rs232_open(struct rs232_port_t *p)
 	 * signal, so here we restore back to blocking operations.
 	 */
 	flags = fcntl(ux->fd, F_GETFL);
-	flags |= O_NDELAY;
+	flags &= ~O_NDELAY;
 	fcntl(ux->fd, F_SETFL, flags);
 
 	if (tcflush(ux->fd, TCIOFLUSH) < 0) {
@@ -478,7 +478,7 @@ rs232_open(struct rs232_port_t *p)
 }
 
 void
-rs232_set_device(struct rs232_port_t *p, char *device)
+rs232_set_device(struct rs232_port_t *p, const char *device)
 {
 	DBG("p=%p old=%s new=%s\n", (void *)p, p->dev, device);
 	strncpy(p->dev, device, RS232_STRLEN_DEVICE);
@@ -493,6 +493,9 @@ rs232_set_baud(struct rs232_port_t *p, enum rs232_baud_e baud)
 
 	DBG("p=%p p->pt=%p baud=%d (%s bauds)\n",
 	    (void *)p, p->pt, baud, rs232_strbaud(baud));
+
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
 
 	GET_PORT_STATE(ux->fd, &term)
 
@@ -553,6 +556,9 @@ rs232_set_dtr(struct rs232_port_t *p, enum rs232_dtr_e state)
 	DBG("p=%p p->pt=%p dtr=%d (dtr control %s)\n",
 	    (void *)p, p->pt, state, rs232_strdtr(state));
 
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
 	ret = ioctl(ux->fd, TIOCMGET, &set);
 	if (ret == -1) {
 		DBG("%s\n", "TIOCMGET RS232_ERR_IOCTL");
@@ -591,6 +597,9 @@ rs232_set_rts(struct rs232_port_t *p, enum rs232_rts_e state)
 	DBG("p=%p p->pt=%p rts=%d (rts control %s)\n",
 	    (void *)p, p->pt, state, rs232_strrts(state));
 
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
 	ret = ioctl(ux->fd, TIOCMGET, &set);
 	if (ret == -1) {
 		DBG("%s\n", "TIOCMGET RS232_ERR_IOCTL");
@@ -628,6 +637,9 @@ rs232_set_parity(struct rs232_port_t *p, enum rs232_parity_e parity)
 	DBG("p=%p p->pt=%p parity=%d (parity %s)\n",
 	    (void *)p, p->pt, parity, rs232_strparity(parity));
 
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
 	GET_PORT_STATE(ux->fd, &term)
 
 	switch (parity) {
@@ -660,6 +672,9 @@ rs232_set_stop(struct rs232_port_t *p, enum rs232_stop_e stop)
 	DBG("p=%p p->pt=%p stop=%d (%s stop bits)\n",
 	    (void *)p, p->pt, stop, rs232_strstop(stop));
 
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
 	GET_PORT_STATE(ux->fd, &term)
 	term.c_cflag &= ~CSTOPB;
 
@@ -687,6 +702,9 @@ rs232_set_data(struct rs232_port_t *p, enum rs232_data_e data)
 
 	DBG("p=%p p->pt=%p data=%d (%s data bits)\n",
 	    (void *)p, p->pt, data, rs232_strdata(data));
+
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
 
 	GET_PORT_STATE(ux->fd, &term)
 	term.c_cflag &= ~CSIZE;
@@ -722,6 +740,9 @@ rs232_set_flow(struct rs232_port_t *p, enum rs232_flow_e flow)
 
 	DBG("p=%p p->pt=%p flow=%d (flow control %s)\n",
 	    (void *)p, p->pt, flow, rs232_strflow(flow));
+
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
 
 	GET_PORT_STATE(ux->fd, &term)
 
