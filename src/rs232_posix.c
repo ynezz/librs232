@@ -341,7 +341,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 }
 
 unsigned int
-rs232_write(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
+rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len,
 		unsigned int *write_len)
 {
 	int w;
@@ -371,7 +371,7 @@ rs232_write(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
 }
 
 unsigned int
-rs232_write_timeout(struct rs232_port_t *p, unsigned char *buf,
+rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 			unsigned int buf_len, unsigned int *write_len,
 			unsigned int timeout)
 {
@@ -478,7 +478,7 @@ rs232_open(struct rs232_port_t *p)
 }
 
 void
-rs232_set_device(struct rs232_port_t *p, char *device)
+rs232_set_device(struct rs232_port_t *p, const char *device)
 {
 	DBG("p=%p old=%s new=%s\n", (void *)p, p->dev, device);
 	strncpy(p->dev, device, RS232_STRLEN_DEVICE);
