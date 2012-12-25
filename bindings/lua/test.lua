@@ -1,4 +1,4 @@
-port_name = "/dev/ttyS0"
+port_name = "/dev/ttyUSB0"
 platform = "linux"
 
 -- port_name = "COM1"
@@ -232,6 +232,7 @@ for _, rts in pairs(rts_bits) do
 	assert(
 		test(
 			string.format([[
+				local timeout = 10
 				local e, p = rs232.open("%s")
 				assert(e == rs232.RS232_ERR_NOERROR)
 				assert(p ~= nil)
@@ -282,23 +283,23 @@ for _, rts in pairs(rts_bits) do
 				local e = p:flush()
 				assert(e == rs232.RS232_ERR_NOERROR)
 				 
-				e, d, l = p:read(1, 100)
-				assert(e == rs232.RS232_ERR_NOERROR)
+				e, d, l = p:read(1, timeout)
+				assert(e == rs232.RS232_ERR_TIMEOUT)
 				assert(d == nil)
 				assert(l == 0)
 				 
 				-- not implemented yet...
 				if platform ~= "win32" then
 					local forced = 1
-					e, d, l = p:read(1, 100, forced)
-					assert(e == rs232.RS232_ERR_NOERROR)
+					e, d, l = p:read(1, timeout, forced)
+					assert(e == rs232.RS232_ERR_TIMEOUT)
 					assert(d == nil)
 					assert(l == 0)
 				end
 				 
 				local forced = 0
-				e, d, l = p:read(1, 100, forced)
-				assert(e == rs232.RS232_ERR_NOERROR)
+				e, d, l = p:read(1, timeout, forced)
+				assert(e == rs232.RS232_ERR_TIMEOUT)
 				assert(d == nil)
 				assert(l == 0)
 				 
@@ -312,7 +313,7 @@ for _, rts in pairs(rts_bits) do
 					assert(l == 5)
 				end
 				 
-				e, l = p:write("ynezz", 100)
+				e, l = p:write("ynezz", timeout)
 				assert(e == rs232.RS232_ERR_NOERROR)
 				 
 				-- althought the write is successful it returns 0 bytes written
