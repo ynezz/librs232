@@ -125,7 +125,9 @@ static int lua_port_open(lua_State *L)
 	}
 
 	lua_pushinteger(L, RS232_ERR_NOERROR);
-	lua_pushlightuserdata(L, p);
+	{ struct rs232_port_t **t =
+	    lua_newuserdata(L, sizeof(struct rs232_port_t *));
+	  *t = p; }
 
 	luaL_getmetatable(L, MODULE_NAMESPACE);
 	lua_setmetatable(L, -2);
@@ -150,7 +152,7 @@ static int lua_port_read(lua_State *L)
 	unsigned char *data = NULL;
 	struct rs232_port_t *p = NULL;
 
-	p = (struct rs232_port_t*) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 	lua_remove(L, 1);
 
 	if (p == NULL || !rs232_port_open(p)) {
@@ -216,7 +218,7 @@ static int lua_port_write(lua_State *L)
 	const char *data;
 	struct rs232_port_t *p = NULL;
 
-	p = (struct rs232_port_t*) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 	lua_remove(L, 1);
 
 	if (p == NULL || !rs232_port_open(p)) {
@@ -251,7 +253,7 @@ static int lua_port_write(lua_State *L)
 /* error = port:close() */
 static int lua_port_close(lua_State *L)
 {
-	struct rs232_port_t *p = (struct rs232_port_t*) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 
 	if (p == NULL || !rs232_port_open(p)) {
 		lua_pushinteger(L, RS232_ERR_PORT_CLOSED);
@@ -265,7 +267,7 @@ static int lua_port_close(lua_State *L)
 /* error = port:flush() */
 static int lua_port_flush(lua_State *L)
 {
-	struct rs232_port_t *p = (struct rs232_port_t*) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 
 	if (p == NULL || !rs232_port_open(p)) {
 		lua_pushinteger(L, RS232_ERR_PORT_CLOSED);
@@ -280,7 +282,7 @@ static int lua_port_flush(lua_State *L)
 static int lua_port_tostring(lua_State *L)
 {
 	const char *ret;
-	struct rs232_port_t *p = (struct rs232_port_t*) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 
 	if (p == NULL) {
 		lua_pushnil(L);
@@ -298,7 +300,7 @@ static int lua_port_tostring(lua_State *L)
 
 static int lua_port_device(lua_State *L)
 {
-	struct rs232_port_t *p = (struct rs232_port_t*) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 	const char *ret = rs232_get_device(p);
 	if (ret == NULL)
 		lua_pushnil(L);
@@ -310,7 +312,7 @@ static int lua_port_device(lua_State *L)
 
 static int lua_port_fd(lua_State *L)
 {
-	struct rs232_port_t *p = (struct rs232_port_t*) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 	lua_pushinteger(L, rs232_fd(p));
 	return 1;
 }
@@ -332,7 +334,7 @@ static int lua_port_strerror(lua_State *L)
 #define FN_SET_PORT(type) \
 	static int lua_port_set_##type(lua_State *L) \
 	{ \
-		struct rs232_port_t *p = (struct rs232_port_t*) luaL_checkudata(L, 1, MODULE_NAMESPACE); \
+		struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE); \
 		lua_pushnumber(L, rs232_set_##type(p, (unsigned int) luaL_checknumber(L, 2))); \
 		return 1; \
 	} \
@@ -340,7 +342,7 @@ static int lua_port_strerror(lua_State *L)
 #define FN_GET_PORT(type) \
 	static int lua_port_get_##type(lua_State *L) \
 	{ \
-		struct rs232_port_t *p = (struct rs232_port_t*) luaL_checkudata(L, 1, MODULE_NAMESPACE); \
+		struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE); \
 		lua_pushnumber(L, rs232_get_##type(p)); \
 		return 1; \
 	}
@@ -348,7 +350,7 @@ static int lua_port_strerror(lua_State *L)
 #define FN_GET_PORT_STRING(type) \
 	static int lua_port_get_str##type(lua_State *L) \
 	{ \
-		struct rs232_port_t *p = (struct rs232_port_t*) luaL_checkudata(L, 1, MODULE_NAMESPACE); \
+		struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE); \
 		int param = (int) luaL_optinteger(L, 2, -1); \
 		const char *ret = rs232_str##type(param == -1 ? rs232_get_##type(p) : (unsigned int) param); \
 		if (ret == NULL) { \
