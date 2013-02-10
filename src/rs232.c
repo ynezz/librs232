@@ -312,3 +312,9 @@ rs232_get_rts(struct rs232_port_t *p)
 	DBG("p=%p rts: %d\n", (void *)p, p->rts);
 	return p->rts;
 }
+
+RS232_LIB const char *
+rs232_version(void)
+{
+	return RS232_VERSION;
+}

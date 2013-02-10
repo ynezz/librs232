@@ -32,3 +32,4 @@ missing
 Makefile
 libtool
 *.pc
+include/librs232/version.h

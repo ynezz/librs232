@@ -29,6 +29,8 @@
 
 #include <time.h>
 
+#include "version.h"
+
 #define RS232_STRLEN 512
 #define RS232_STRLEN_DEVICE 30
 
@@ -212,5 +214,6 @@ RS232_LIB const char * rs232_strflow(unsigned int flow);
 RS232_LIB const char * rs232_strdtr(unsigned int dtr);
 RS232_LIB const char * rs232_strrts(unsigned int rts);
 RS232_LIB unsigned int rs232_fd(struct rs232_port_t *p);
+RS232_LIB const char * rs232_version(void);
 
 #endif /* __LIBRS232_H__ */

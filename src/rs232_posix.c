@@ -51,7 +51,7 @@ rs232_init(void)
 	if (p->pt == NULL)
 		return NULL;
 
-	DBG("p=%p p->pt=%p\n", (void *)p, p->pt);
+	DBG("version: %s p=%p p->pt=%p\n", rs232_version(), (void *)p, p->pt);
 
 	memset(p->pt, 0, sizeof(struct rs232_posix_t));
 	memset(p->dev, 0, RS232_STRLEN_DEVICE+1);
