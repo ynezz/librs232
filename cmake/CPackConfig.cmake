@@ -1,0 +1,31 @@
+include(InstallRequiredSystemLibraries)
+
+# For help take a look at:
+# http://www.cmake.org/Wiki/CMake:CPackConfiguration
+
+if(NOT WIN32)
+	set(CPACK_SET_DESTDIR ON)
+endif()
+
+### general settings
+set(CPACK_PACKAGE_NAME "librs232")
+set(CPACK_PACKAGE_VENDOR "librs232")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Multiplatform library for serial communication")
+
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
+
+### versions
+set(CPACK_PACKAGE_VERSION_MAJOR ${LIB_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${LIB_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${LIB_VERSION_PATCH})
+set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+
+set(CPACK_GENERATOR "TGZ")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+
+### source package settings
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_SOURCE_IGNORE_FILES "~$;[.]swp$;/[.]svn/;/[.]git/;.gitignore;/build/;tags;cscope.*")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+
+include(CPack)
