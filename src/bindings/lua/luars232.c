@@ -33,9 +33,8 @@
 
 #define MODULE_TIMESTAMP __DATE__ " " __TIME__
 #define MODULE_NAMESPACE "luars232"
-#define MODULE_VERSION "1.0.3"
-#define MODULE_BUILD "$Id: luars232.c 15 2011-02-23 09:02:20Z sp $"
-#define MODULE_COPYRIGHT "Copyright (c) 2011 Petr Stetiar <ynezz@true.cz>, Gaben Ltd."
+#define MODULE_VERSION RS232_VERSION_LUA
+#define MODULE_COPYRIGHT "Copyright (c) 2013 Petr Stetiar <ynezz@true.cz>, Gaben Ltd."
 
 static struct {
 	const char *name;
@@ -454,9 +453,6 @@ RS232_LIB int luaopen_luars232(lua_State *L)
 
 	lua_pushstring(L, MODULE_VERSION);
 	lua_setfield(L, -2, "_VERSION");
-
-	lua_pushstring(L, MODULE_BUILD);
-	lua_setfield(L, -2, "_BUILD");
 
 	lua_pushstring(L, MODULE_TIMESTAMP);
 	lua_setfield(L, -2, "_TIMESTAMP");
