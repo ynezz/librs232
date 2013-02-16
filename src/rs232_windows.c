@@ -224,7 +224,7 @@ RS232_LIB unsigned int
 rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
 	   unsigned int *read_len)
 {
-	unsigned int r = 0;
+	unsigned long r = 0;
 	struct rs232_windows_t *wx = p->pt;
 
 	DBG("p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
@@ -268,7 +268,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 		   unsigned int buf_len, unsigned int *read_len,
 		   unsigned int timeout)
 {
-	unsigned int r = 0;
+	unsigned long r = 0;
 	struct rs232_windows_t *wx = p->pt;
 	unsigned int rt = wx->r_timeout;
 
@@ -305,7 +305,7 @@ RS232_LIB unsigned int
 rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len,
 		unsigned int *write_len)
 {
-	unsigned int w = 0;
+	unsigned long w = 0;
 	struct rs232_windows_t *wx = p->pt;
 
 	DBG("p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
@@ -334,7 +334,7 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 			unsigned int buf_len, unsigned int *write_len,
 			unsigned int timeout)
 {
-	unsigned int w = 0;
+	unsigned long w = 0;
 	struct rs232_windows_t *wx = p->pt;
 	unsigned int wt = wx->w_timeout;
 
