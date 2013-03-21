@@ -1,6 +1,7 @@
 # vim: set ts=8 noet:
 
 project(librs232 C)
+
 cmake_minimum_required(VERSION 2.6)
 
 set(LIB_VERSION_MAJOR "2")

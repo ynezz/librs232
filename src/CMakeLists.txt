@@ -3,6 +3,11 @@
 set(RS232_LIBRARY ${PROJECT_NAME})
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
+endif()
+
 set(lib_SRCS rs232.c)
 if(WIN32)
 	configure_file(librs232.rc.cmake librs232.rc)
