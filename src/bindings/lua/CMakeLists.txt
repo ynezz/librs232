@@ -15,8 +15,14 @@ if(UNIX)
 endif()
 
 add_library(luars232 MODULE ${lib_SRCS})
-target_link_libraries(luars232 ${LUA_LIBRARY} ${RS232_LIBRARY})
 set_target_properties(luars232 PROPERTIES PREFIX "")
+if(LUA_RS232_STATIC)
+	target_link_libraries(luars232 ${LUA_LIBRARY} rs232_static)
+else()
+	target_link_libraries(luars232 ${LUA_LIBRARY} ${RS232_LIBRARY})
+endif()
+
+
 include_directories(${LUA_INCLUDE_DIR})
 
 install(

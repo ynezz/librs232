@@ -18,8 +18,8 @@ else(WIN32)
 	list(APPEND lib_SRCS rs232_posix.c)
 endif(WIN32)
 
-add_library(rs232 STATIC ${lib_SRCS})
-add_library(${RS232_LIBRARY} SHARED rs232 ${RC_FILE})
+add_library(rs232_static STATIC ${lib_SRCS})
+add_library(${RS232_LIBRARY} SHARED ${lib_SRCS} ${RC_FILE})
 
 # pkg-config file
 configure_file(librs232.pc.cmake ${CMAKE_CURRENT_BINARY_DIR}/librs232.pc)
