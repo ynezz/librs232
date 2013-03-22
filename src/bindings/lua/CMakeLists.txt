@@ -14,6 +14,10 @@ if(UNIX)
 			OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 
+if(NOT LUA_PACKAGE_CPATH)
+	set(LUA_PACKAGE_CPATH lua)
+endif()
+
 add_library(luars232 MODULE ${lib_SRCS})
 set_target_properties(luars232 PROPERTIES PREFIX "")
 if(LUA_RS232_STATIC)
