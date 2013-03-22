@@ -8,8 +8,14 @@ if(WIN32)
 	list(APPEND lib_SRCS luars232.rc)
 endif()
 
-add_library(luars232 MODULE ${lib_SRCS} )
-target_link_libraries(luars232 ${LUA_LIBRARY} rs232)
+if(UNIX)
+	execute_process(COMMAND lua -e "print(package.cpath:match(\".*;(.*)/%?.so;.*\"))"
+			OUTPUT_VARIABLE LUA_PACKAGE_CPATH
+			OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+
+add_library(luars232 MODULE ${lib_SRCS})
+target_link_libraries(luars232 ${LUA_LIBRARY} ${RS232_LIBRARY})
 set_target_properties(luars232 PROPERTIES PREFIX "")
 include_directories(${LUA_INCLUDE_DIR})
 
@@ -17,7 +23,7 @@ install(
 	TARGETS
 		luars232
 	DESTINATION
-		lua
+		${LUA_PACKAGE_CPATH}
 	COMPONENT
 		lua
 )
