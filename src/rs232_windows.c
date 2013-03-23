@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #ifndef UNDER_CE
 #include <errno.h>
@@ -55,6 +56,7 @@ a2w(const char *astr)
 	return ret;
 }
 
+#ifdef RS232_DEBUG
 static char * last_error(void)
 {
 	unsigned long err = 0;
@@ -74,6 +76,7 @@ static char * last_error(void)
 
 	return retbuf;
 }
+#endif
 
 RS232_LIB struct rs232_port_t *
 rs232_init(void)

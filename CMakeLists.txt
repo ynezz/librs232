@@ -1,6 +1,7 @@
 # vim: set ts=8 noet:
 
 project(librs232 C)
+
 cmake_minimum_required(VERSION 2.6)
 
 set(LIB_VERSION_MAJOR "2")
@@ -29,8 +30,5 @@ configure_file(${CMAKE_SOURCE_DIR}/include/librs232/version.h.cmake ${CMAKE_SOUR
 add_subdirectory(include)
 add_subdirectory(src)
 
-if(WITH_TESTING)
-	find_package(CMocka REQUIRED)
-	include(AddCMockaTest)
-	add_subdirectory(tests)
-endif()
+enable_testing()
+add_subdirectory(tests)
