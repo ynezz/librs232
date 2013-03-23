@@ -8,5 +8,6 @@ find_program(
 if(CRAM_EXECUTABLE)
 	if(LUA_BINDINGS)
 		add_test(cram-lua-tests ${CRAM_EXECUTABLE} -v ${CMAKE_CURRENT_SOURCE_DIR})
+		set_tests_properties(cram-lua-tests PROPERTIES ENVIRONMENT "LUA_CPATH=${CMAKE_BINARY_DIR}/src/bindings/lua/?.so")
 	endif()
 endif()
