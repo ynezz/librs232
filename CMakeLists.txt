@@ -30,8 +30,5 @@ configure_file(${CMAKE_SOURCE_DIR}/include/librs232/version.h.cmake ${CMAKE_SOUR
 add_subdirectory(include)
 add_subdirectory(src)
 
-if(WITH_TESTING)
-	find_package(CMocka REQUIRED)
-	include(AddCMockaTest)
-	add_subdirectory(tests)
-endif()
+enable_testing()
+add_subdirectory(tests)
