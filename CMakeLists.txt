@@ -30,5 +30,7 @@ configure_file(${CMAKE_SOURCE_DIR}/include/librs232/version.h.cmake ${CMAKE_SOUR
 add_subdirectory(include)
 add_subdirectory(src)
 
-enable_testing()
-add_subdirectory(tests)
+if(UNIT_TESTING)
+	enable_testing()
+	add_subdirectory(tests)
+endif()
