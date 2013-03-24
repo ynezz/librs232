@@ -3,7 +3,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include <librs232/rs232.h>
+#include "librs232/rs232.h"
 
 static void test_strerror(void **state)
 {
@@ -92,6 +92,49 @@ static void test_strrts(void **state)
 	assert_string_equal(rs232_strrts(RS232_RTS_OFF), "off");
 }
 
+static void test_basic(void **state)
+{
+	struct rs232_port_t *p = NULL;
+	(void) state;
+
+	p = rs232_init();
+	assert_non_null(p);
+	assert_null(rs232_to_string(NULL));
+	rs232_set_device(p, "blah");
+	assert_string_equal(rs232_get_device(p), "blah");
+	assert_string_equal(rs232_to_string(p),
+			    "device: blah, baud: 115200, "
+			    "data bits: 8, parity: none, stop bits: 1, flow "
+			    "control: off");
+
+	assert_int_equal(rs232_set_baud(p, RS232_BAUD_9600), RS232_ERR_PORT_CLOSED);
+	assert_int_equal(rs232_get_baud(p), RS232_BAUD_115200);
+	assert_string_equal(rs232_strbaud(rs232_get_baud(p)), "115200");
+
+	assert_int_equal(rs232_set_data(p, RS232_DATA_5), RS232_ERR_PORT_CLOSED);
+	assert_int_equal(rs232_get_data(p), RS232_DATA_8);
+	assert_string_equal(rs232_strdata(rs232_get_data(p)), "8");
+
+	assert_int_equal(rs232_set_parity(p, RS232_PARITY_ODD), RS232_ERR_PORT_CLOSED);
+	assert_int_equal(rs232_get_parity(p), RS232_PARITY_NONE);
+	assert_string_equal(rs232_strparity(rs232_get_parity(p)), "none");
+
+	assert_int_equal(rs232_set_stop(p, RS232_STOP_2), RS232_ERR_PORT_CLOSED);
+	assert_int_equal(rs232_get_stop(p), RS232_STOP_1);
+	assert_string_equal(rs232_strstop(rs232_get_parity(p)), "1");
+
+	assert_int_equal(rs232_set_flow(p, RS232_FLOW_HW), RS232_ERR_PORT_CLOSED);
+	assert_int_equal(rs232_get_flow(p), RS232_FLOW_OFF);
+	assert_string_equal(rs232_strflow(rs232_get_flow(p)), "off");
+
+	assert_string_equal(rs232_to_string(p),
+			    "device: blah, baud: 115200, "
+			    "data bits: 8, parity: none, stop bits: 1, flow "
+			    "control: off");
+
+	rs232_end(p);
+}
+
 int main(void)
 {
 	const UnitTest tests[] = {
@@ -103,6 +146,7 @@ int main(void)
 		unit_test(test_strflow),
 		unit_test(test_strdtr),
 		unit_test(test_strrts),
+		unit_test(test_basic),
 	};
 
 	return run_tests(tests);
