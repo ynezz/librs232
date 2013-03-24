@@ -180,7 +180,7 @@ enum rs232_error_e {
 RS232_LIB struct rs232_port_t * rs232_init(void);
 RS232_LIB void rs232_end(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_open(struct rs232_port_t *p);
-RS232_LIB unsigned int rs232_port_open(struct rs232_port_t *p);
+RS232_LIB unsigned int rs232_is_port_open(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_close(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_flush(struct rs232_port_t *p);
 RS232_LIB void rs232_set_device(struct rs232_port_t *p, const char *device);

@@ -293,7 +293,7 @@ rs232_get_flow(struct rs232_port_t *p)
 }
 
 RS232_LIB unsigned int
-rs232_port_open(struct rs232_port_t *p)
+rs232_is_port_open(struct rs232_port_t *p)
 {
 	DBG("p=%p p->status=%d\n", (void *)p, p->status);
 	return p->status;

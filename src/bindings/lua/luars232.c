@@ -154,7 +154,7 @@ static int lua_port_read(lua_State *L)
 	p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 	lua_remove(L, 1);
 
-	if (p == NULL || !rs232_port_open(p)) {
+	if (p == NULL || !rs232_is_port_open(p)) {
 		lua_pushinteger(L, RS232_ERR_PORT_CLOSED);
 		lua_pushnil(L);
 		lua_pushinteger(L, 0);
@@ -220,7 +220,7 @@ static int lua_port_write(lua_State *L)
 	p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 	lua_remove(L, 1);
 
-	if (p == NULL || !rs232_port_open(p)) {
+	if (p == NULL || !rs232_is_port_open(p)) {
 		lua_pushinteger(L, RS232_ERR_PORT_CLOSED);
 		lua_pushinteger(L, 0);
 		return 2;
@@ -254,7 +254,7 @@ static int lua_port_close(lua_State *L)
 {
 	struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 
-	if (p == NULL || !rs232_port_open(p)) {
+	if (p == NULL || !rs232_is_port_open(p)) {
 		lua_pushinteger(L, RS232_ERR_PORT_CLOSED);
 		return 1;
 	}
@@ -268,7 +268,7 @@ static int lua_port_flush(lua_State *L)
 {
 	struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 
-	if (p == NULL || !rs232_port_open(p)) {
+	if (p == NULL || !rs232_is_port_open(p)) {
 		lua_pushinteger(L, RS232_ERR_PORT_CLOSED);
 		return 1;
 	}
