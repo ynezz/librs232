@@ -141,6 +141,7 @@ enum rs232_rts_e {
 struct rs232_port_t {
 	char dev[RS232_STRLEN_DEVICE+1];
 	void *pt; /* platform specific stuff */
+	void *userdata;
 	enum rs232_baud_e baud;
 	enum rs232_data_e data;
 	enum rs232_stop_e stop;
@@ -217,5 +218,7 @@ RS232_LIB const char * rs232_strdtr(unsigned int dtr);
 RS232_LIB const char * rs232_strrts(unsigned int rts);
 RS232_LIB unsigned int rs232_fd(struct rs232_port_t *p);
 RS232_LIB const char * rs232_version(void);
+RS232_LIB void rs32_set_userdata(struct rs232_port_t *p, void *userdata);
+RS232_LIB void * rs32_get_userdata(struct rs232_port_t *p);
 
 #endif /* __LIBRS232_H__ */

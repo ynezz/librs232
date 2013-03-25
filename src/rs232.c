@@ -318,3 +318,21 @@ rs232_version(void)
 {
 	return RS232_VERSION;
 }
+
+RS232_LIB void
+rs32_set_userdata(struct rs232_port_t *p, void *userdata)
+{
+	dbg(p, "p=%p userdata: %p\n", (void *)p, userdata);
+	p->userdata = userdata;
+}
+
+RS232_LIB void *
+rs32_get_userdata(struct rs232_port_t *p)
+{
+	if (p == NULL)
+		return NULL;
+
+	dbg(p, "p=%p userdata: %p\n", (void *)p, p->userdata);
+	return p->userdata;
+}
+
