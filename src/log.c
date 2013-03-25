@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -24,30 +24,56 @@
  *
  */
 
-#ifndef __LIBRS232_POSIX_H__
-#define __LIBRS232_POSIX_H__
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
-#include <termios.h>
+#include "librs232/rs232.h"
+#include "librs232/log.h"
 
-#ifndef B460800
-#define B460800 460800
-#endif
+void
+rs232_log(struct rs232_port_t *p, int priority, const char *file,
+	       int line, const char *fn, const char *format, ...)
+{
+        va_list args;
 
-struct rs232_posix_t {
-	int fd;
-	struct termios oldterm;
-};
+        va_start(args, format);
+	p->log_fn(p, priority, file, line, fn, format, args);
+	va_end(args);
+}
 
-#define GET_PORT_STATE(p, fd, state) \
-	if (tcgetattr(fd, state) < 0) { \
-		dbg(p, "tcgetattr() %d %s\n", errno, strerror(errno)); \
-		return RS232_ERR_CONFIG; \
-	}
+void
+rs232_log_stderr(struct rs232_port_t *p, int priority, const char *file,
+		 int line, const char *fn, const char *format, va_list args)
+{
+	/* unused */
+	(void) p;
+	(void) file;
+	(void) line;
+	(void) priority;
 
-#define SET_PORT_STATE(p, fd, state) \
-	if (tcsetattr(fd, TCSANOW, state) < 0) { \
-		dbg(p, "tcsetattr() %d %s\n", errno, strerror(errno)); \
-		return RS232_ERR_CONFIG; \
-	} \
+        fprintf(stderr, "librs232: %s[%d]: ", fn, line);
+        vfprintf(stderr, format, args);
+}
 
-#endif /* __LIBRS232_POSIX_H__ */
+void
+rs232_set_log_fn(struct rs232_port_t *p, void (*log_fn)(struct rs232_port_t *p,
+		 int priority, const char *file, int line, const char *fn,
+		 const char *format, va_list args))
+{
+	p->log_fn = log_fn;
+}
+
+int
+rs232_get_log_priority(struct rs232_port_t *p)
+{
+	return p->log_priority;
+}
+
+void
+rs232_set_log_priority(struct rs232_port_t *p, int priority)
+{
+	p->log_priority = priority;
+}
+

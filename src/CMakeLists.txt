@@ -9,6 +9,15 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 set(lib_SRCS rs232.c)
+
+if(WITH_LOGGING)
+	list(APPEND lib_SRCS log.c)
+	add_definitions(-DRS232_WITH_LOGGING)
+	if(WITH_DEBUG_LOGGING)
+		add_definitions(-DRS232_DEBUG_LOGGING)
+	endif()
+endif()
+
 if(WIN32)
 	configure_file(librs232.rc.cmake librs232.rc)
 	set(RC_FILE librs232.rc)

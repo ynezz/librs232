@@ -30,6 +30,7 @@
 #include <ctype.h>
 
 #include "librs232/rs232.h"
+#include "librs232/log.h"
 
 static const char *
 rs232_baud[] = {
@@ -100,7 +101,186 @@ rs232_error[] = {
 	"port closed error",
 };
 
-#ifdef RS232_DEBUG
+RS232_LIB const char *
+rs232_strerror(unsigned int error)
+{
+	if (error >= RS232_ERR_MAX)
+		return NULL;
+
+	return rs232_error[error];
+}
+
+RS232_LIB const char *
+rs232_strbaud(unsigned int baud)
+{
+	if (baud >= RS232_BAUD_MAX)
+		return NULL;
+
+	return rs232_baud[baud];
+}
+
+RS232_LIB const char *
+rs232_strdata(unsigned int data)
+{
+	if (data >= RS232_DATA_MAX)
+		return NULL;
+
+	return rs232_data[data];
+}
+
+RS232_LIB const char *
+rs232_strparity(unsigned int parity)
+{
+	if (parity >= RS232_PARITY_MAX)
+		return NULL;
+
+	return rs232_parity[parity];
+}
+
+RS232_LIB const char *
+rs232_strstop(unsigned int stop)
+{
+	if (stop >= RS232_STOP_MAX)
+		return NULL;
+
+	return rs232_stop[stop];
+}
+
+RS232_LIB const char *
+rs232_strflow(unsigned int flow)
+{
+	if (flow >= RS232_FLOW_MAX)
+		return NULL;
+
+	return rs232_flow[flow];
+}
+
+RS232_LIB const char *
+rs232_strdtr(unsigned int dtr)
+{
+	if (dtr >= RS232_DTR_MAX)
+		return NULL;
+
+	return rs232_dtr[dtr];
+}
+
+RS232_LIB const char *
+rs232_strrts(unsigned int rts)
+{
+	if (rts >= RS232_RTS_MAX)
+		return NULL;
+
+	return rs232_rts[rts];
+}
+
+RS232_LIB const char *
+rs232_to_string(struct rs232_port_t *p)
+{
+	static char str[RS232_STRLEN+1];
+
+	if (p == NULL)
+		return NULL;
+
+	snprintf(str, RS232_STRLEN, "device: %s, baud: %s, data bits: %s,"
+					" parity: %s, stop bits: %s,"
+					" flow control: %s",
+					p->dev,
+					rs232_strbaud(p->baud),
+					rs232_strdata(p->data),
+					rs232_strparity(p->parity),
+					rs232_strstop(p->stop),
+					rs232_strflow(p->flow));
+
+	return str;
+}
+
+RS232_LIB const char *
+rs232_get_device(struct rs232_port_t *p)
+{
+	dbg(p, "p=%p device: %s\n", (void *)p, p->dev);
+	return p->dev;
+}
+
+RS232_LIB unsigned int
+rs232_get_baud(struct rs232_port_t *p)
+{
+	dbg(p, "p=%p baud: %d\n", (void *)p, p->baud);
+	return p->baud;
+}
+
+RS232_LIB unsigned int
+rs232_get_stop(struct rs232_port_t *p)
+{
+	dbg(p, "p=%p baud: %d\n", (void *)p, p->stop);
+	return p->stop;
+}
+
+RS232_LIB unsigned int
+rs232_get_data(struct rs232_port_t *p)
+{
+	dbg(p, "p=%p data: %d\n", (void *)p, p->data);
+	return p->data;
+
+}
+
+RS232_LIB unsigned int
+rs232_get_parity(struct rs232_port_t *p)
+{
+	dbg(p, "p=%p parity: %d\n", (void *)p, p->parity);
+	return p->parity;
+}
+
+RS232_LIB unsigned int
+rs232_get_flow(struct rs232_port_t *p)
+{
+	dbg(p, "p=%p flow: %d\n", (void *)p, p->flow);
+	return p->flow;
+}
+
+RS232_LIB unsigned int
+rs232_is_port_open(struct rs232_port_t *p)
+{
+	dbg(p, "p=%p p->status=%d\n", (void *)p, p->status);
+	return p->status;
+}
+
+RS232_LIB unsigned int
+rs232_get_dtr(struct rs232_port_t *p)
+{
+	dbg(p, "p=%p dtr: %d\n", (void *)p, p->dtr);
+	return p->dtr;
+}
+
+RS232_LIB unsigned int
+rs232_get_rts(struct rs232_port_t *p)
+{
+	dbg(p, "p=%p rts: %d\n", (void *)p, p->rts);
+	return p->rts;
+}
+
+RS232_LIB const char *
+rs232_version(void)
+{
+	return RS232_VERSION;
+}
+
+RS232_LIB void
+rs32_set_userdata(struct rs232_port_t *p, void *userdata)
+{
+	dbg(p, "p=%p userdata: %p\n", (void *)p, userdata);
+	p->userdata = userdata;
+}
+
+RS232_LIB void *
+rs32_get_userdata(struct rs232_port_t *p)
+{
+	if (p == NULL)
+		return NULL;
+
+	dbg(p, "p=%p userdata: %p\n", (void *)p, p->userdata);
+	return p->userdata;
+}
+
 const char *
 rs232_hex_dump(const void *data, unsigned int len)
 {
@@ -135,204 +315,5 @@ rs232_ascii_dump(const void *data, unsigned int len)
 
 	string[i] = '\0';
 	return string;
-}
-#endif
-
-RS232_LIB const char *
-rs232_strerror(unsigned int error)
-{
-	DBG("error=%d\n", error);
-
-	if (error >= RS232_ERR_MAX)
-		return NULL;
-
-	return rs232_error[error];
-}
-
-RS232_LIB const char *
-rs232_strbaud(unsigned int baud)
-{
-	DBG("baud=%d\n", baud);
-
-	if (baud >= RS232_BAUD_MAX)
-		return NULL;
-
-	return rs232_baud[baud];
-}
-
-RS232_LIB const char *
-rs232_strdata(unsigned int data)
-{
-	DBG("data=%d\n", data);
-
-	if (data >= RS232_DATA_MAX)
-		return NULL;
-
-	return rs232_data[data];
-}
-
-RS232_LIB const char *
-rs232_strparity(unsigned int parity)
-{
-	DBG("parity=%d\n", parity);
-
-	if (parity >= RS232_PARITY_MAX)
-		return NULL;
-
-	return rs232_parity[parity];
-}
-
-RS232_LIB const char *
-rs232_strstop(unsigned int stop)
-{
-	DBG("stop=%d\n", stop);
-
-	if (stop >= RS232_STOP_MAX)
-		return NULL;
-
-	return rs232_stop[stop];
-}
-
-RS232_LIB const char *
-rs232_strflow(unsigned int flow)
-{
-	DBG("flow=%d\n", flow);
-
-	if (flow >= RS232_FLOW_MAX)
-		return NULL;
-
-	return rs232_flow[flow];
-}
-
-RS232_LIB const char *
-rs232_strdtr(unsigned int dtr)
-{
-	DBG("dtr=%d\n", dtr);
-
-	if (dtr >= RS232_DTR_MAX)
-		return NULL;
-
-	return rs232_dtr[dtr];
-}
-
-RS232_LIB const char *
-rs232_strrts(unsigned int rts)
-{
-	DBG("rts=%d\n", rts);
-
-	if (rts >= RS232_RTS_MAX)
-		return NULL;
-
-	return rs232_rts[rts];
-}
-
-RS232_LIB const char *
-rs232_to_string(struct rs232_port_t *p)
-{
-	static char str[RS232_STRLEN+1];
-
-	DBG("p=%p\n", (void *)p);
-
-	if (p == NULL)
-		return NULL;
-
-	snprintf(str, RS232_STRLEN, "device: %s, baud: %s, data bits: %s,"
-					" parity: %s, stop bits: %s,"
-					" flow control: %s",
-					p->dev,
-					rs232_strbaud(p->baud),
-					rs232_strdata(p->data),
-					rs232_strparity(p->parity),
-					rs232_strstop(p->stop),
-					rs232_strflow(p->flow));
-
-	return str;
-}
-
-RS232_LIB const char *
-rs232_get_device(struct rs232_port_t *p)
-{
-	DBG("p=%p device: %s\n", (void *)p, p->dev);
-	return p->dev;
-}
-
-RS232_LIB unsigned int
-rs232_get_baud(struct rs232_port_t *p)
-{
-	DBG("p=%p baud: %d\n", (void *)p, p->baud);
-	return p->baud;
-}
-
-RS232_LIB unsigned int
-rs232_get_stop(struct rs232_port_t *p)
-{
-	DBG("p=%p baud: %d\n", (void *)p, p->stop);
-	return p->stop;
-}
-
-RS232_LIB unsigned int
-rs232_get_data(struct rs232_port_t *p)
-{
-	DBG("p=%p data: %d\n", (void *)p, p->data);
-	return p->data;
-
-}
-
-RS232_LIB unsigned int
-rs232_get_parity(struct rs232_port_t *p)
-{
-	DBG("p=%p parity: %d\n", (void *)p, p->parity);
-	return p->parity;
-}
-
-RS232_LIB unsigned int
-rs232_get_flow(struct rs232_port_t *p)
-{
-	DBG("p=%p flow: %d\n", (void *)p, p->flow);
-	return p->flow;
-}
-
-RS232_LIB unsigned int
-rs232_is_port_open(struct rs232_port_t *p)
-{
-	DBG("p=%p p->status=%d\n", (void *)p, p->status);
-	return p->status;
-}
-
-RS232_LIB unsigned int
-rs232_get_dtr(struct rs232_port_t *p)
-{
-	DBG("p=%p dtr: %d\n", (void *)p, p->dtr);
-	return p->dtr;
-}
-
-RS232_LIB unsigned int
-rs232_get_rts(struct rs232_port_t *p)
-{
-	DBG("p=%p rts: %d\n", (void *)p, p->rts);
-	return p->rts;
-}
-
-RS232_LIB const char *
-rs232_version(void)
-{
-	return RS232_VERSION;
-}
-
-RS232_LIB void
-rs32_set_userdata(struct rs232_port_t *p, void *userdata)
-{
-	dbg(p, "p=%p userdata: %p\n", (void *)p, userdata);
-	p->userdata = userdata;
-}
-
-RS232_LIB void *
-rs32_get_userdata(struct rs232_port_t *p)
-{
-	if (p == NULL)
-		return NULL;
-
-	dbg(p, "p=%p userdata: %p\n", (void *)p, p->userdata);
-	return p->userdata;
 }
 

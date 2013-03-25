@@ -27,6 +27,7 @@
 #ifndef __LIBRS232_H__
 #define __LIBRS232_H__
 
+#include <stdarg.h>
 #include <time.h>
 
 #include "version.h"
@@ -52,33 +53,11 @@
  #include "librs232/rs232_posix.h"
 #endif
 
-#ifdef RS232_DEBUG
-const char* rs232_hex_dump(const void *data, unsigned int len);
-const char* rs232_ascii_dump(const void *data, unsigned int len);
-
- #if defined(WIN32) || defined(UNDER_CE)
-  #include <windows.h>
-  #define DBG(x, ...) \
- 		{ \
-			SYSTEMTIME t; \
-			GetLocalTime(&t); \
-			fprintf(stderr, "[%02d:%02d:%02d.%03d] %s(%d):%s: " x, t.wHour, t.wMinute, \
-				t.wSecond, t.wMilliseconds,  __FILE__, __LINE__, __FUNCTION__, ## __VA_ARGS__); \
-		}
- #else
-  #define DBG(x, ...) \
-		{ \
-			time_t now = time(NULL); \
-			struct tm* t = localtime(&now); \
-			fprintf(stderr, "[%02d:%02d:%02d] %s(%d):%s: " x, t->tm_hour, t->tm_min, \
-				t->tm_sec,  __FILE__, __LINE__, __FUNCTION__, ## __VA_ARGS__); \
-		}
- #endif /* #if defined(WIN32) || defined(UNDER_CE) */
-#else
- #define DBG(x, ...)
- #define rs232_hex_dump(x, y)
- #define rs232_ascii_dump(x, y)
-#endif /* RS232_DEBUG */
+enum rs232_log_e {
+	RS232_LOG_ERROR,
+	RS232_LOG_INFO ,
+	RS232_LOG_DEBUG,
+};
 
 enum rs232_baud_e {
 	RS232_BAUD_300,
@@ -138,10 +117,24 @@ enum rs232_rts_e {
 	RS232_RTS_MAX
 };
 
+struct rs232_port_t;
+#ifdef __GNUC__
+typedef void (*rs232_log_fn)(struct rs232_port_t *p, int priority, const char *file,
+			     int line, const char *fn, const char *format, va_list args)
+			     __attribute__ ((format (printf, 6, 0)));
+#else
+typedef void (*rs232_log_fn)(struct rs232_port_t *p, int priority, const char *file,
+			     int line, const char *fn, const char *format, va_list args);
+#endif
+
 struct rs232_port_t {
 	char dev[RS232_STRLEN_DEVICE+1];
 	void *pt; /* platform specific stuff */
 	void *userdata;
+#ifdef RS232_WITH_LOGGING
+	rs232_log_fn log_fn;
+	int log_priority;
+#endif
 	enum rs232_baud_e baud;
 	enum rs232_data_e data;
 	enum rs232_stop_e stop;
@@ -177,6 +170,9 @@ enum rs232_error_e {
 #else
 	#define RS232_LIB
 #endif
+
+const char * rs232_hex_dump(const void *data, unsigned int len);
+const char * rs232_ascii_dump(const void *data, unsigned int len);
 
 RS232_LIB struct rs232_port_t * rs232_init(void);
 RS232_LIB void rs232_end(struct rs232_port_t *p);
@@ -220,5 +216,8 @@ RS232_LIB unsigned int rs232_fd(struct rs232_port_t *p);
 RS232_LIB const char * rs232_version(void);
 RS232_LIB void rs32_set_userdata(struct rs232_port_t *p, void *userdata);
 RS232_LIB void * rs32_get_userdata(struct rs232_port_t *p);
+RS232_LIB void rs232_set_log_fn(struct rs232_port_t *p, void (*log_fn)(struct rs232_port_t *p, int priority, const char *file, int line, const char *fn, const char *format, va_list args));
+RS232_LIB int rs232_get_log_priority(struct rs232_port_t *p);
+RS232_LIB void rs232_set_log_priority(struct rs232_port_t *p, int priority);
 
 #endif /* __LIBRS232_H__ */

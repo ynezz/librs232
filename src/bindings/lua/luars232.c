@@ -30,6 +30,7 @@
 #include <stdlib.h>
 
 #include "librs232/rs232.h"
+#include "librs232/log.h"
 
 #define MODULE_TIMESTAMP __DATE__ " " __TIME__
 #define MODULE_NAMESPACE "luars232"
@@ -112,7 +113,7 @@ static int lua_port_open(lua_State *L)
 		return 2;
 	}
 
-	DBG("p=%p \n", (void *)p);
+	dbg(p, "p=%p \n", (void *)p);
 
 	rs232_set_device(p, (char *) luaL_checkstring(L, 1));
 	ret = rs232_open(p);
@@ -188,7 +189,7 @@ static int lua_port_read(lua_State *L)
 		return 3;
 	}
 
-	DBG("ret=%d hex='%s' bytes_read=%d\n",
+	dbg(p, "ret=%d hex='%s' bytes_read=%d\n",
 	    ret, rs232_hex_dump(data, bytes_read), bytes_read);
 
 	lua_pushinteger(L, ret);
@@ -459,9 +460,6 @@ RS232_LIB int luaopen_luars232(lua_State *L)
 
 	lua_pushstring(L, MODULE_COPYRIGHT);
 	lua_setfield(L, -2, "_COPYRIGHT");
-
-	DBG("[*] luaopen_luars232(Version: '%s' Build: '%s' TimeStamp: '%s')\n",
-	    MODULE_VERSION, MODULE_BUILD, MODULE_TIMESTAMP);
 
 	return 0;
 }
