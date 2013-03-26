@@ -44,7 +44,7 @@ rs232_log_null(struct rs232_port_t *p, const char *format, ...) { (void) p; (voi
 #else
 void rs232_log_stderr(struct rs232_port_t *p, int priority, const char *file, int line, const char *fn, const char *format, va_list args);
 void rs232_log(struct rs232_port_t *p, int priority, const char *file, int line, const char *fn, const char *format, ...);
-static inline void rs232_log_null(struct rs232_port_t *p, const char *format, ...) {}
+static void rs232_log_null(struct rs232_port_t *p, const char *format, ...) {}
 #endif
 
 #define rs232_log_cond(p, prio, ...) \
