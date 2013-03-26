@@ -1,7 +1,9 @@
 find_program(
 	CRAM_EXECUTABLE
 	NAMES cram
-	HINTS ENV CRAM_DIR
+	HINTS
+		/usr/local/share/python
+		ENV CRAM_DIR
 	PATH_SUFFIXES bin
 )
 
