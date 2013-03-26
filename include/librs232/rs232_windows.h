@@ -43,29 +43,29 @@ struct rs232_windows_t {
 	unsigned int w_buffer;
 };
 
-#define GET_PORT_TIMEOUTS(fd, t) \
+#define GET_PORT_TIMEOUTS(p, fd, t) \
 	memset(t, 0, sizeof(COMMTIMEOUTS)); \
 	if (!GetCommTimeouts(fd, t)) { \
-		DBG("GetCommTimeouts() %s\n", last_error()); \
+		dbg(p, "GetCommTimeouts() %s\n", last_error()); \
 		return RS232_ERR_UNKNOWN; \
 	}
 
-#define SET_PORT_TIMEOUTS(fd, t) \
+#define SET_PORT_TIMEOUTS(p, fd, t) \
 	if (!SetCommTimeouts(fd, t)) { \
-		DBG("SetCommTimeouts() %s\n", last_error()); \
+		dbg(p, "SetCommTimeouts() %s\n", last_error()); \
 		return RS232_ERR_UNKNOWN; \
 	}
 
-#define GET_PORT_STATE(fd, pdcb) \
+#define GET_PORT_STATE(p, fd, pdcb) \
 	memset(pdcb, 0, sizeof(DCB)); \
 	if (!GetCommState(fd, pdcb)) { \
-		DBG("GetCommState() %s\n", last_error()); \
+		dbg(p, "GetCommState() %s\n", last_error()); \
 		return RS232_ERR_UNKNOWN; \
 	}
 
-#define SET_PORT_STATE(fd, pdcb) \
+#define SET_PORT_STATE(p, fd, pdcb) \
 	if (!SetCommState(fd, pdcb)) { \
-		DBG("SetCommState() %s\n", last_error()); \
+		dbg(p, "SetCommState() %s\n", last_error()); \
 		return RS232_ERR_UNKNOWN; \
 	}
 

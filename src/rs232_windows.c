@@ -34,6 +34,7 @@
 #endif
 
 #include "librs232/rs232.h"
+#include "librs232/log.h"
 
 static wchar_t *
 a2w(const char *astr)
@@ -56,7 +57,7 @@ a2w(const char *astr)
 	return ret;
 }
 
-#ifdef RS232_DEBUG
+#ifdef RS232_WITH_LOGGING
 static char * last_error(void)
 {
 	unsigned long err = 0;
@@ -91,8 +92,6 @@ rs232_init(void)
 	if (p->pt == NULL)
 		return NULL;
 
-	DBG("version: %s p=%p p->pt=%p\n", rs232_version(), (void *)p, p->pt);
-
 	memset(p->dev, 0, RS232_STRLEN_DEVICE+1);
 	strncpy(p->dev, RS232_PORT_WIN32, RS232_STRLEN_DEVICE);
 
@@ -119,13 +118,13 @@ port_buffers(struct rs232_port_t *p, unsigned int rb, unsigned int wb)
 {
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p rb=%d wb=%d\n", (void *)p, p->pt, rb, wb);
+	dbg(p, "p=%p p->pt=%p rb=%d wb=%d\n", (void *)p, p->pt, rb, wb);
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
 	if (!SetupComm(wx->fd, rb, wb)) {
-		DBG("SetupComm() %s\n", last_error());
+		dbg(p, "SetupComm() %s\n", last_error());
 		return RS232_ERR_UNKNOWN;
 	}
 
@@ -144,7 +143,7 @@ port_timeout(struct rs232_port_t *p, unsigned int rt, unsigned int wt)
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	GET_PORT_TIMEOUTS(wx->fd, &t);
+	GET_PORT_TIMEOUTS(p, wx->fd, &t);
 
 	t.ReadIntervalTimeout = 0;
 	t.ReadTotalTimeoutMultiplier = 0;
@@ -152,7 +151,7 @@ port_timeout(struct rs232_port_t *p, unsigned int rt, unsigned int wt)
 	t.WriteTotalTimeoutMultiplier = 0;
 	t.WriteTotalTimeoutConstant = wt;
 
-	SET_PORT_TIMEOUTS(wx->fd, &t);
+	SET_PORT_TIMEOUTS(p, wx->fd, &t);
 
 	wx->w_timeout = wt;
 	wx->r_timeout = rt;
@@ -165,7 +164,7 @@ rs232_end(struct rs232_port_t *p)
 {
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p\n", (void *)p, p->pt);
+	dbg(p, "p=%p p->pt=%p\n", (void *)p, p->pt);
 
 	if (!rs232_is_port_open(p)) {
 		free(p->pt);
@@ -176,12 +175,12 @@ rs232_end(struct rs232_port_t *p)
 	rs232_flush(p);
 
 	if (!SetCommState(wx->fd, &wx->old_dcb)) {
-		DBG("SetCommState() %s\n", last_error());
+		dbg(p, "SetCommState() %s\n", last_error());
 		return;
 	}
 
 	if (!SetCommTimeouts(wx->fd, &wx->old_tm)) {
-		DBG("SetCommTimeouts() %s\n", last_error());
+		dbg(p, "SetCommTimeouts() %s\n", last_error());
 		return;
 	}
 
@@ -197,18 +196,18 @@ rs232_in_qeue(struct rs232_port_t *p, unsigned int *in_bytes)
 	unsigned long errmask = 0;
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p\n", (void *)p, p->pt);
+	dbg(p, "p=%p p->pt=%p\n", (void *)p, p->pt);
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
 	if (!ClearCommError(wx->fd, &errmask, &cs)) {
-		DBG("ClearCommError() %s\n", last_error());
+		dbg(p, "ClearCommError() %s\n", last_error());
 		return RS232_ERR_IOCTL;
 	}
 
 	*in_bytes = cs.cbInQue;
-	DBG("in_bytes=%d\n", cs.cbInQue);
+	dbg(p, "in_bytes=%lu\n", cs.cbInQue);
 
 	return RS232_ERR_NOERROR;
 }
@@ -220,7 +219,7 @@ rs232_in_qeue_clear(struct rs232_port_t *p)
 {
 	/* TODO */
 	UNREFERENCED_PARAMETER(p);
-	DBG("%s\n", "sorry, not implemented yet");
+	dbg(p, "%s\n", "sorry, not implemented yet");
 }
 
 RS232_LIB unsigned int
@@ -230,19 +229,19 @@ rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
 	unsigned long r = 0;
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
+	dbg(p, "p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
 	if (!ReadFile(wx->fd, buf, buf_len, &r, NULL)) {
 		*read_len = 0;
-		DBG("ReadFile() %s\n", last_error());
+		dbg(p, "ReadFile() %s\n", last_error());
 		return RS232_ERR_READ;
 	}
 
 	*read_len = r;
-	DBG("read_len=%d hex='%s' ascii='%s'\n", r, rs232_hex_dump(buf, r),
+	dbg(p, "read_len=%lu hex='%s' ascii='%s'\n", r, rs232_hex_dump(buf, r),
 		rs232_ascii_dump(buf, r));
 
 	return RS232_ERR_NOERROR;
@@ -262,7 +261,7 @@ rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
 	UNREFERENCED_PARAMETER(buf_len);
 
 	/* TODO */
-	DBG("%s\n", "sorry, not implemented yet");
+	dbg(p, "%s\n", "sorry, not implemented yet");
 	return RS232_ERR_UNKNOWN;
 }
 
@@ -275,7 +274,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 	struct rs232_windows_t *wx = p->pt;
 	unsigned int rt = wx->r_timeout;
 
-	DBG("p=%p p->pt=%p buf_len: %d timeout: %d\n", (void *)p, p->pt, buf_len, timeout);
+	dbg(p, "p=%p p->pt=%p buf_len: %d timeout: %d\n", (void *)p, p->pt, buf_len, timeout);
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
@@ -287,7 +286,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 
 	if (!ReadFile(wx->fd, buf, buf_len, &r, NULL)) {
 		*read_len = 0;
-		DBG("ReadFile() %s\n", last_error());
+		dbg(p, "ReadFile() %s\n", last_error());
 		return RS232_ERR_READ;
 	}
 
@@ -295,7 +294,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 		return RS232_ERR_UNKNOWN;
 
 	*read_len = r;
-	DBG("read_len=%d hex='%s' ascii='%s'\n", r, rs232_hex_dump(buf, r),
+	dbg(p, "read_len=%lu hex='%s' ascii='%s'\n", r, rs232_hex_dump(buf, r),
 	    rs232_ascii_dump(buf, r));
 
 	/* TODO - This is lame, since we rely on the fact, that if we read 0 bytes,
@@ -311,22 +310,22 @@ rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_l
 	unsigned long w = 0;
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
+	dbg(p, "p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
 	if (!WriteFile(wx->fd, buf, buf_len, &w, NULL)) {
 		*write_len = 0;
-		DBG("WriteFile() %s\n", last_error());
+		dbg(p, "WriteFile() %s\n", last_error());
 		return RS232_ERR_WRITE;
 	}
 
 	if (buf_len != w)
-		DBG("WriteFile() %s\n", last_error());
+		dbg(p, "WriteFile() %s\n", last_error());
 
 	*write_len = w;
-	DBG("write_len=%d hex='%s' ascii='%s'\n", w, rs232_hex_dump(buf, w),
+	dbg(p, "write_len=%lu hex='%s' ascii='%s'\n", w, rs232_hex_dump(buf, w),
 	    rs232_ascii_dump(buf, w));
 
 	return RS232_ERR_NOERROR;
@@ -341,7 +340,7 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 	struct rs232_windows_t *wx = p->pt;
 	unsigned int wt = wx->w_timeout;
 
-	DBG("p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
+	dbg(p, "p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
@@ -351,7 +350,7 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 
 	if (!WriteFile(wx->fd, buf, buf_len, &w, NULL)) {
 		*write_len = 0;
-		DBG("WriteFile() %s\n", last_error());
+		dbg(p, "WriteFile() %s\n", last_error());
 		return RS232_ERR_WRITE;
 	}
 
@@ -359,7 +358,7 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 		return RS232_ERR_UNKNOWN;
 
 	*write_len = w;
-	DBG("write_len=%d hex='%s' ascii='%s'\n", w, rs232_hex_dump(buf, w),
+	dbg(p, "write_len=%lua hex='%s' ascii='%s'\n", w, rs232_hex_dump(buf, w),
 	    rs232_ascii_dump(buf, w));
 
 	return RS232_ERR_NOERROR;
@@ -393,7 +392,7 @@ rs232_open(struct rs232_port_t *p)
 	wchar_t *wname = a2w(fix_device_name(p->dev));
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p name='%s' fix='%s'\n",
+	dbg(p, "p=%p p->pt=%p name='%s' fix='%s'\n",
 	    (void *)p, p->pt, p->dev, fix_device_name(p->dev));
 
 	if (wname == NULL)
@@ -407,15 +406,15 @@ rs232_open(struct rs232_port_t *p)
 		free(wname);
 
 	if (wx->fd == INVALID_HANDLE_VALUE) {
-		DBG("CreateFile() %s\n", last_error());
+		dbg(p, "CreateFile() %s\n", last_error());
 		return RS232_ERR_OPEN;
 	}
 
 	p->status = RS232_PORT_OPEN;
 	rs232_flush(p);
 
-	GET_PORT_STATE(wx->fd, &wx->old_dcb);
-	GET_PORT_TIMEOUTS(wx->fd, &wx->old_tm);
+	GET_PORT_STATE(p, wx->fd, &wx->old_dcb);
+	GET_PORT_TIMEOUTS(p, wx->fd, &wx->old_tm);
 
 	port_timeout(p, wx->r_timeout, wx->w_timeout);
 	port_buffers(p, wx->r_buffer, wx->w_buffer);
@@ -432,7 +431,7 @@ rs232_open(struct rs232_port_t *p)
 RS232_LIB void
 rs232_set_device(struct rs232_port_t *p, const char *device)
 {
-	DBG("p=%p old=%s new=%s\n", (void *)p, p->dev, device);
+	dbg(p, "p=%p old=%s new=%s\n", (void *)p, p->dev, device);
 	strncpy(p->dev, device, RS232_STRLEN_DEVICE);
 
 	return;
@@ -444,13 +443,13 @@ rs232_set_baud(struct rs232_port_t *p, enum rs232_baud_e baud)
 	DCB pdcb;
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p baud=%d (%s bauds)\n",
+	dbg(p, "p=%p p->pt=%p baud=%d (%s bauds)\n",
 	    (void *)p, p->pt, baud, rs232_strbaud(baud));
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	GET_PORT_STATE(wx->fd, &pdcb);
+	GET_PORT_STATE(p, wx->fd, &pdcb);
 
 	switch (baud) {
 	case RS232_BAUD_300:
@@ -484,7 +483,7 @@ rs232_set_baud(struct rs232_port_t *p, enum rs232_baud_e baud)
 		return RS232_ERR_UNKNOWN;
 	}
 
-	SET_PORT_STATE(wx->fd, &pdcb);
+	SET_PORT_STATE(p, wx->fd, &pdcb);
 	p->baud = baud;
 
 	return RS232_ERR_NOERROR;
@@ -496,13 +495,13 @@ rs232_set_dtr(struct rs232_port_t *p, enum rs232_dtr_e state)
 	DCB pdcb;
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p dtr=%d (dtr control %s)\n",
+	dbg(p, "p=%p p->pt=%p dtr=%d (dtr control %s)\n",
 	    (void *)p, p->pt, state, rs232_strdtr(state));
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	GET_PORT_STATE(wx->fd, &pdcb);
+	GET_PORT_STATE(p, wx->fd, &pdcb);
 
 	switch (state) {
 	case RS232_DTR_OFF:
@@ -515,7 +514,7 @@ rs232_set_dtr(struct rs232_port_t *p, enum rs232_dtr_e state)
 		return RS232_ERR_UNKNOWN;
 	}
 
-	SET_PORT_STATE(wx->fd, &pdcb);
+	SET_PORT_STATE(p, wx->fd, &pdcb);
 	p->dtr = state;
 
 	return RS232_ERR_NOERROR;
@@ -527,13 +526,13 @@ rs232_set_rts(struct rs232_port_t *p, enum rs232_rts_e state)
 	DCB pdcb;
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p rts=%d (rts control %s)\n",
+	dbg(p, "p=%p p->pt=%p rts=%d (rts control %s)\n",
 	    (void *)p, p->pt, state, rs232_strrts(state));
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	GET_PORT_STATE(wx->fd, &pdcb);
+	GET_PORT_STATE(p, wx->fd, &pdcb);
 
 	switch (state) {
 	case RS232_DTR_OFF:
@@ -546,7 +545,7 @@ rs232_set_rts(struct rs232_port_t *p, enum rs232_rts_e state)
 		return RS232_ERR_UNKNOWN;
 	}
 
-	SET_PORT_STATE(wx->fd, &pdcb);
+	SET_PORT_STATE(p, wx->fd, &pdcb);
 	p->rts = state;
 
 	return RS232_ERR_NOERROR;
@@ -558,13 +557,13 @@ rs232_set_parity(struct rs232_port_t *p, enum rs232_parity_e parity)
 	DCB pdcb;
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p parity=%d (parity %s)\n",
+	dbg(p, "p=%p p->pt=%p parity=%d (parity %s)\n",
 	    (void *)p, p->pt, parity, rs232_strparity(parity));
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	GET_PORT_STATE(wx->fd, &pdcb);
+	GET_PORT_STATE(p, wx->fd, &pdcb);
 
 	switch (parity) {
 	case RS232_PARITY_NONE:
@@ -580,7 +579,7 @@ rs232_set_parity(struct rs232_port_t *p, enum rs232_parity_e parity)
 		return RS232_ERR_UNKNOWN;
 	}
 
-	SET_PORT_STATE(wx->fd, &pdcb);
+	SET_PORT_STATE(p, wx->fd, &pdcb);
 	p->parity = parity;
 
 	return RS232_ERR_NOERROR;
@@ -592,13 +591,13 @@ rs232_set_stop(struct rs232_port_t *p, enum rs232_stop_e stop)
 	DCB pdcb;
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p stop=%d (%s stop bits)\n",
+	dbg(p, "p=%p p->pt=%p stop=%d (%s stop bits)\n",
 	    (void *)p, p->pt, stop, rs232_strstop(stop));
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	GET_PORT_STATE(wx->fd, &pdcb);
+	GET_PORT_STATE(p, wx->fd, &pdcb);
 
 	switch (stop) {
 	case RS232_STOP_1:
@@ -611,7 +610,7 @@ rs232_set_stop(struct rs232_port_t *p, enum rs232_stop_e stop)
 		return RS232_ERR_UNKNOWN;
 	}
 
-	SET_PORT_STATE(wx->fd, &pdcb);
+	SET_PORT_STATE(p, wx->fd, &pdcb);
 	p->stop = stop;
 
 	return RS232_ERR_NOERROR;
@@ -623,13 +622,13 @@ rs232_set_data(struct rs232_port_t *p, enum rs232_data_e data)
 	DCB pdcb;
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p data=%d (%s data bits)\n",
+	dbg(p, "p=%p p->pt=%p data=%d (%s data bits)\n",
 	    (void *)p, p->pt, data, rs232_strdata(data));
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	GET_PORT_STATE(wx->fd, &pdcb);
+	GET_PORT_STATE(p, wx->fd, &pdcb);
 
 	switch (data) {
 	case RS232_DATA_5:
@@ -648,7 +647,7 @@ rs232_set_data(struct rs232_port_t *p, enum rs232_data_e data)
 		return RS232_ERR_UNKNOWN;
 	}
 
-	SET_PORT_STATE(wx->fd, &pdcb);
+	SET_PORT_STATE(p, wx->fd, &pdcb);
 	p->data = data;
 
 	return RS232_ERR_NOERROR;
@@ -660,13 +659,13 @@ rs232_set_flow(struct rs232_port_t *p, enum rs232_flow_e flow)
 	DCB pdcb;
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p flow=%d (flow control %s)\n",
+	dbg(p, "p=%p p->pt=%p flow=%d (flow control %s)\n",
 	    (void *)p, p->pt, flow, rs232_strflow(flow));
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	GET_PORT_STATE(wx->fd, &pdcb);
+	GET_PORT_STATE(p, wx->fd, &pdcb);
 
 	switch (flow) {
 	case RS232_FLOW_OFF:
@@ -691,7 +690,7 @@ rs232_set_flow(struct rs232_port_t *p, enum rs232_flow_e flow)
 		return RS232_ERR_UNKNOWN;
 	}
 
-	SET_PORT_STATE(wx->fd, &pdcb);
+	SET_PORT_STATE(p, wx->fd, &pdcb);
 
 	p->flow = flow;
 
@@ -703,19 +702,19 @@ rs232_flush(struct rs232_port_t *p)
 {
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p\n", (void *)p, p->pt);
+	dbg(p, "p=%p p->pt=%p\n", (void *)p, p->pt);
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
 	if (!FlushFileBuffers(wx->fd)) {
-		DBG("FlushFileBuffers() %s\n", last_error());
+		dbg(p, "FlushFileBuffers() %s\n", last_error());
 		return RS232_ERR_FLUSH;
 	}
 
 	if (!PurgeComm(wx->fd, PURGE_TXABORT | PURGE_RXABORT |
 		       PURGE_TXCLEAR | PURGE_RXCLEAR)) {
-		DBG("PurgeComm() %s\n", last_error());
+		dbg(p, "PurgeComm() %s\n", last_error());
 		return RS232_ERR_FLUSH;
 	}
 
@@ -728,14 +727,14 @@ rs232_close(struct rs232_port_t *p)
 	int ret;
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p\n", (void *)p, p->pt);
+	dbg(p, "p=%p p->pt=%p\n", (void *)p, p->pt);
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
 	ret = CloseHandle(wx->fd);
 	if (ret == 0) {
-		DBG("PurgeComm() %s\n", last_error());
+		dbg(p, "PurgeComm() %s\n", last_error());
 		return RS232_ERR_CLOSE;
 	}
 
@@ -747,7 +746,7 @@ rs232_fd(struct rs232_port_t *p)
 {
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p wx->fd=%d\n", (void *)p, p->pt, wx->fd);
+	dbg(p, "p=%p p->pt=%p wx->fd=%p\n", (void *)p, p->pt, wx->fd);
 
 	return (unsigned int) wx->fd;
 }
