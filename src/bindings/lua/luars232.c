@@ -113,8 +113,6 @@ static int lua_port_open(lua_State *L)
 		return 2;
 	}
 
-	dbg(p, "p=%p \n", (void *)p);
-
 	rs232_set_device(p, (char *) luaL_checkstring(L, 1));
 	ret = rs232_open(p);
 	if (ret > RS232_ERR_NOERROR) {
@@ -188,9 +186,6 @@ static int lua_port_read(lua_State *L)
 		lua_pushinteger(L, 0);
 		return 3;
 	}
-
-	dbg(p, "ret=%d hex='%s' bytes_read=%d\n",
-	    ret, rs232_hex_dump(data, bytes_read), bytes_read);
 
 	lua_pushinteger(L, ret);
 	if (bytes_read > 0)

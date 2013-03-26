@@ -1,1 +1,4 @@
-
+Lua
+===
+* access to the logging output either by some buffer or callback function
+	- p:set_log_function(function(c) print(c) end)
