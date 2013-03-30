@@ -193,6 +193,7 @@ rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
 	   unsigned int *read_len)
 {
 	int r;
+	tick_t ts;
 	struct rs232_posix_t *ux = p->pt;
 
 	dbg(p, "p=%p p->pt=%p buf_len=%d\n", (void *)p, p->pt, buf_len);
@@ -200,7 +201,9 @@ rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
+	rs232_oper_start(&ts);
 	r = read(ux->fd, buf, buf_len);
+	rs232_oper_stop(p, ts);
 	if (r == -1) {
 		*read_len = 0;
 		dbg(p, "errno: %d strerror: %s %s\n",
@@ -238,6 +241,7 @@ rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
 	struct timeval tv;
 	struct timeval t1;
 	struct timeval t2;
+	tick_t ts;
 
 	dbg(p, "p=%p p->pt=%p buf_len=%d timeout=%d\n", (void *)p, p->pt, buf_len,
 	    timeout);
@@ -253,6 +257,7 @@ rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
 	*read_len = 0;
 	gettimeofday(&t1, NULL);
 
+	rs232_oper_start(&ts);
 	while (1) {
 		ret = select(ux->fd+1, &set, NULL, NULL, &tv);
 		gettimeofday(&t2, NULL);
@@ -287,9 +292,11 @@ rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
 	switch (ret) {
 	case 0:
 		dbg(p, "%s\n", "RS232_ERR_TIMEOUT");
+		rs232_oper_stop(p, ts);
 		return RS232_ERR_TIMEOUT;
 	case 1:
 		r = read(ux->fd, buf, buf_len);
+		rs232_oper_stop(p, ts);
 		if (r == -1) {
 			dbg(p, "errno: %d strerror: %s %s\n",
 			    errno, strerror(errno), "RS232_ERR_READ");
@@ -304,6 +311,7 @@ rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
 		break;
 	default:
 		dbg(p, "%s\n", "RS232_ERR_SELECT");
+		rs232_oper_stop(p, ts);
 		return RS232_ERR_SELECT;
 	}
 
@@ -318,6 +326,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 	int ret;
 	fd_set set;
 	int r;
+	tick_t ts;
 	struct timeval tv;
 	struct rs232_posix_t *ux = p->pt;
 
@@ -333,13 +342,16 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 	tv.tv_usec = timeout * 1000;
 	*read_len = 0;
 
+	rs232_oper_start(&ts);
 	ret = select(ux->fd+1, &set, NULL, NULL, &tv);
 	switch (ret) {
 	case 0:
 		dbg(p, "%s\n", "RS232_ERR_TIMEOUT");
+		rs232_oper_stop(p, ts);
 		return RS232_ERR_TIMEOUT;
 	case 1:
 		r = read(ux->fd, buf, buf_len);
+		rs232_oper_stop(p, ts);
 		if (r == -1) {
 			dbg(p, "errno: %d strerror: %s %s\n",
 			    errno, strerror(errno), "RS232_ERR_READ");
@@ -353,6 +365,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 		break;
 	default:
 		dbg(p, "%s\n", "RS232_ERR_SELECT");
+		rs232_oper_stop(p, ts);
 		return RS232_ERR_SELECT;
 	}
 
@@ -364,6 +377,7 @@ rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_l
 		unsigned int *write_len)
 {
 	int w;
+	tick_t ts;
 	struct rs232_posix_t *ux = p->pt;
 
 	dbg(p, "p=%p p->pt=%p hex='%s' ascii='%s' buf_len=%d\n", 
@@ -373,7 +387,9 @@ rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_l
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
+	rs232_oper_start(&ts);
 	w = write(ux->fd, buf, buf_len);
+	rs232_oper_stop(p, ts);
 	if (w == -1) {
 		dbg(p, "errno: %d strerror: %s %s\n",
 		    errno, strerror(errno), "RS232_ERR_WRITE");
@@ -397,6 +413,7 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 	int ret;
 	fd_set set;
 	int w;
+	tick_t ts;
 	struct rs232_posix_t *ux = p->pt;
 	struct timeval tv;
 
@@ -411,13 +428,16 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 	tv.tv_usec = timeout * 1000;
 	*write_len = 0;
 
+	rs232_oper_start(&ts);
 	ret = select(ux->fd+1, NULL, &set, NULL, &tv);
 	switch (ret) {
 	case 0:
 		dbg(p, "%s\n", "RS232_ERR_TIMEOUT");
+		rs232_oper_stop(p, ts);
 		return RS232_ERR_TIMEOUT;
 	case 1:
 		w = write(ux->fd, buf, buf_len);
+		rs232_oper_stop(p, ts);
 		if (w == -1) {
 			dbg(p, "errno: %d strerror: %s %s\n",
 			    errno, strerror(errno), "RS232_ERR_WRITE");
@@ -432,6 +452,7 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 		break;
 	default:
 		dbg(p, "%s\n", "RS232_ERR_SELECT");
+		rs232_oper_stop(p, ts);
 		return RS232_ERR_SELECT;
 	}
 

@@ -178,5 +178,6 @@ RS232_LIB void * rs32_get_userdata(struct rs232_port_t *p);
 RS232_LIB void rs232_set_log_fn(struct rs232_port_t *p, void (*log_fn)(struct rs232_port_t *p, int priority, const char *file, int line, const char *fn, const char *format, va_list args));
 RS232_LIB int rs232_get_log_priority(struct rs232_port_t *p);
 RS232_LIB void rs232_set_log_priority(struct rs232_port_t *p, int priority);
+RS232_LIB double rs232_operation_duration(struct rs232_port_t *p);
 
 #endif /* __LIBRS232_H__ */

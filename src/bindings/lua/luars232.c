@@ -311,6 +311,13 @@ static int lua_port_fd(lua_State *L)
 	return 1;
 }
 
+static int lua_port_operation_duration(lua_State *L)
+{
+	struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	lua_pushnumber(L, rs232_operation_duration(p));
+	return 1;
+}
+
 /*
  * print(port:error_tostring(error))
  */
@@ -388,6 +395,7 @@ static luaL_reg port_methods[] = {
 	{ "flush", lua_port_flush },
 	{ "device", lua_port_device },
 	{ "fd", lua_port_fd },
+	{ "operation_duration", lua_port_operation_duration },
 	/* baud */
 	{ "baud_rate", lua_port_get_baud },
 	{ "baud_rate_tostring", lua_port_get_strbaud },

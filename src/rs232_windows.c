@@ -243,6 +243,8 @@ RS232_LIB unsigned int
 rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
 	   unsigned int *read_len)
 {
+	int ret;
+	tick_t ts;
 	unsigned long r = 0;
 	struct rs232_windows_t *wx = p->pt;
 
@@ -251,7 +253,10 @@ rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	if (!ReadFile(wx->fd, buf, buf_len, &r, NULL)) {
+	rs232_oper_start(&ts);
+	ret = ReadFile(wx->fd, buf, buf_len, &r, NULL);
+	rs232_oper_stop(p, ts);
+	if (!ret) {
 		*read_len = 0;
 		dbg(p, "ReadFile() %s\n", last_error());
 		return RS232_ERR_READ;
@@ -287,6 +292,8 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 		   unsigned int buf_len, unsigned int *read_len,
 		   unsigned int timeout)
 {
+	int ret;
+	tick_t ts;
 	unsigned long r = 0;
 	struct rs232_windows_t *wx = p->pt;
 	unsigned int rt = wx->r_timeout;
@@ -301,7 +308,10 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 	if (port_timeout(p, timeout, wx->w_timeout))
 		return RS232_ERR_UNKNOWN;
 
-	if (!ReadFile(wx->fd, buf, buf_len, &r, NULL)) {
+	rs232_oper_start(&ts);
+	ret = ReadFile(wx->fd, buf, buf_len, &r, NULL);
+	rs232_oper_stop(p, ts);
+	if (!ret) {
 		*read_len = 0;
 		dbg(p, "ReadFile() %s\n", last_error());
 		return RS232_ERR_READ;
@@ -324,6 +334,8 @@ RS232_LIB unsigned int
 rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len,
 		unsigned int *write_len)
 {
+	int ret;
+	tick_t ts;
 	unsigned long w = 0;
 	struct rs232_windows_t *wx = p->pt;
 
@@ -332,7 +344,10 @@ rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_l
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	if (!WriteFile(wx->fd, buf, buf_len, &w, NULL)) {
+	rs232_oper_start(&ts);
+	ret = WriteFile(wx->fd, buf, buf_len, &w, NULL);
+	rs232_oper_stop(p, ts);
+	if (!ret) {
 		*write_len = 0;
 		dbg(p, "WriteFile() %s\n", last_error());
 		return RS232_ERR_WRITE;
@@ -353,6 +368,8 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 			unsigned int buf_len, unsigned int *write_len,
 			unsigned int timeout)
 {
+	int ret;
+	tick_t ts;
 	unsigned long w = 0;
 	struct rs232_windows_t *wx = p->pt;
 	unsigned int wt = wx->w_timeout;
@@ -365,7 +382,10 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 	if (port_timeout(p, wx->r_timeout, timeout))
 		return RS232_ERR_UNKNOWN;
 
-	if (!WriteFile(wx->fd, buf, buf_len, &w, NULL)) {
+	rs232_oper_start(&ts);
+	ret = WriteFile(wx->fd, buf, buf_len, &w, NULL);
+	rs232_oper_stop(p, ts);
+	if (!ret) {
 		*write_len = 0;
 		dbg(p, "WriteFile() %s\n", last_error());
 		return RS232_ERR_WRITE;

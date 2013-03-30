@@ -328,3 +328,20 @@ rs232_ascii_dump(const void *data, unsigned int len)
 	return string;
 }
 
+double
+rs232_operation_duration(struct rs232_port_t *p)
+{
+	return p->last_duration;
+}
+
+void
+rs232_oper_start(tick_t *ts)
+{
+	*ts = timer_current();
+}
+
+void
+rs232_oper_stop(struct rs232_port_t *p, const tick_t start)
+{
+	p->last_duration = timer_ticks_to_milliseconds(timer_elapsed_ticks(start));
+}

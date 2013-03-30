@@ -27,6 +27,7 @@
 #pragma once
 
 #include "librs232/rs232.h"
+#include "librs232/timer.h"
 
 #ifdef __GNUC__
 typedef void (*rs232_log_fn)(struct rs232_port_t *p, int priority, const char *file,
@@ -45,6 +46,7 @@ struct rs232_port_t {
 	rs232_log_fn log_fn;
 	int log_priority;
 #endif
+	double last_duration;
 	enum rs232_baud_e baud;
 	enum rs232_data_e data;
 	enum rs232_stop_e stop;
@@ -57,4 +59,6 @@ struct rs232_port_t {
 
 const char * rs232_hex_dump(const void *data, unsigned int len);
 const char * rs232_ascii_dump(const void *data, unsigned int len);
+void rs232_oper_start(tick_t *ts);
+void rs232_oper_stop(struct rs232_port_t *p, const tick_t start);
 
