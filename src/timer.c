@@ -132,6 +132,12 @@ deltatime_t timer_ticks_to_seconds( const tick_t dt )
 }
 
 
+deltatime_t timer_ticks_to_milliseconds( const tick_t dt )
+{
+	return (deltatime_t)( (double)dt * ( _timerlib_oofreq * 1000 ) );
+}
+
+
 #if PLATFORM_WINDOWS
 #if _MSC_VER
 

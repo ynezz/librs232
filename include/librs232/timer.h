@@ -50,9 +50,14 @@ TIMER_API tick_t         timer_elapsed_ticks( const tick_t t );
 TIMER_API tick_t         timer_ticks_per_second( void );
 
 /*! Get ticks as seconds (effectively calculating ticks/timer_ticks_per_second())
-	\param dt            Deltatime in ticks
+    \param dt            Deltatime in ticks
     \return              Deltatime in seconds */
 TIMER_API deltatime_t    timer_ticks_to_seconds( const tick_t dt );
+
+/*! Get ticks as milliseconds (effectively calculating ticks/timer_ticks_per_millisecond())
+    \param dt            Deltatime in ticks
+    \return              Deltatime in milliseconds */
+TIMER_API deltatime_t    timer_ticks_to_milliseconds( const tick_t dt );
 
 /*! Get system time, in milliseconds since the epoch (UNIX time)
     \return  Current timestamp, in milliseconds */
