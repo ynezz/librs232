@@ -28,18 +28,7 @@
 #define __LIBRS232_H__
 
 #include <stdarg.h>
-
 #include "version.h"
-
-#if defined(WIN32) || defined(UNDER_CE)
- #include "librs232/rs232_windows.h"
-#if defined(_MSC_VER)
- #pragma warning(disable:4996)
-#endif
- #define snprintf _snprintf
-#else
- #include "librs232/rs232_posix.h"
-#endif
 
 struct rs232_port_t;
 

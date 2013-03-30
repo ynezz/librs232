@@ -29,6 +29,16 @@
 #include "librs232/rs232.h"
 #include "librs232/timer.h"
 
+#if defined(WIN32) || defined(UNDER_CE)
+ #include "librs232/rs232_windows.h"
+#if defined(_MSC_VER)
+ #pragma warning(disable:4996)
+#endif
+ #define snprintf _snprintf
+#else
+ #include "librs232/rs232_posix.h"
+#endif
+
 #ifdef __GNUC__
 typedef void (*rs232_log_fn)(struct rs232_port_t *p, int priority, const char *file,
 			     int line, const char *fn, const char *format, va_list args)

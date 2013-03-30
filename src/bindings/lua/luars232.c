@@ -32,6 +32,11 @@
 #include "librs232/rs232.h"
 #include "librs232/log.h"
 
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 #define MODULE_TIMESTAMP __DATE__ " " __TIME__
 #define MODULE_NAMESPACE "luars232"
 #define MODULE_VERSION RS232_VERSION_LUA
