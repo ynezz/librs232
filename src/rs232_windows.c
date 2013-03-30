@@ -35,6 +35,7 @@
 
 #include "librs232/rs232.h"
 #include "librs232/log.h"
+#include "librs232/timer.h"
 
 static wchar_t *
 a2w(const char *astr)
@@ -87,6 +88,17 @@ rs232_init(void)
 	p = (struct rs232_port_t *) malloc(sizeof(struct rs232_port_t));
 	if (p == NULL)
 		return NULL;
+
+#ifdef RS232_WITH_LOGGING
+	p->log_fn = rs232_log_stderr;
+	p->log_priority = RS232_LOG_ERROR;
+#endif
+
+	if (timer_lib_initialize() < 0) {
+		err(p, "timer library init error\n");
+		free(p);
+		return NULL;
+	}
 
 	p->pt = (struct rs232_windows_t *) malloc(sizeof(struct rs232_windows_t));
 	if (p->pt == NULL)
