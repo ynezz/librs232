@@ -54,7 +54,7 @@ rs232_init(void)
 	p->log_priority = RS232_LOG_ERROR;
 #endif
 
-	if (!timer_lib_initialize()) {
+	if (timer_lib_initialize() < 0) {
 		err(p, "timer library init error\n");
 		free(p);
 		return NULL;
