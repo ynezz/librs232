@@ -39,6 +39,7 @@
 
 #include "librs232/rs232.h"
 #include "librs232/log.h"
+#include "librs232/timer.h"
 
 struct rs232_port_t *
 rs232_init(void)
@@ -52,6 +53,12 @@ rs232_init(void)
 	p->log_fn = rs232_log_stderr;
 	p->log_priority = RS232_LOG_ERROR;
 #endif
+
+	if (!timer_lib_initialize()) {
+		err(p, "timer library init error\n");
+		free(p);
+		return NULL;
+	}
 
 	p->pt = (struct rs232_posix_t *) malloc(sizeof(struct rs232_posix_t));
 	if (p->pt == NULL)
@@ -819,3 +826,4 @@ rs232_fd(struct rs232_port_t *p)
 
 	return (unsigned int) ux->fd;
 }
+
