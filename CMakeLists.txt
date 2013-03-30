@@ -32,6 +32,13 @@ include(DefineInstallationPaths)
 # install .dlls to bin/
 set(BIN_INSTALL_DIR "bin" CACHE PATH "-")
 
+if(WITH_LOGGING)
+	add_definitions(-DRS232_WITH_LOGGING)
+	if(WITH_DEBUG_LOGGING)
+		add_definitions(-DRS232_DEBUG_LOGGING)
+	endif()
+endif()
+
 configure_file(${CMAKE_SOURCE_DIR}/include/librs232/version.h.cmake ${CMAKE_SOURCE_DIR}/include/librs232/version.h)
 add_subdirectory(include)
 add_subdirectory(src)

@@ -98,6 +98,11 @@ static void test_basic(void **state)
 	(void) state;
 
 	p = rs232_init();
+
+#ifdef RS232_DEBUG_LOGGING
+	rs232_set_log_priority(p, RS232_LOG_DEBUG);
+#endif
+
 	assert_non_null(p);
 	assert_null(rs232_to_string(NULL));
 	rs232_set_device(p, "blah");
