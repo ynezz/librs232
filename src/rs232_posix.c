@@ -38,8 +38,15 @@
 #include <unistd.h>
 
 #include "librs232/rs232.h"
+#include "librs232/rs232_private.h"
 #include "librs232/log.h"
 #include "librs232/timer.h"
+
+#ifdef __linux__
+#define RS232_PORT_POSIX "/dev/ttyS0"
+#else
+#define RS232_PORT_POSIX "/dev/cua00"
+#endif /* __linux__ */
 
 struct rs232_port_t *
 rs232_init(void)
@@ -65,8 +72,7 @@ rs232_init(void)
 		return NULL;
 
 	memset(p->pt, 0, sizeof(struct rs232_posix_t));
-	memset(p->dev, 0, RS232_STRLEN_DEVICE+1);
-	strncpy(p->dev, RS232_PORT_POSIX, RS232_STRLEN_DEVICE);
+	p->device = strdup(RS232_PORT_POSIX);
 
 	p->baud = RS232_BAUD_115200;
 	p->data = RS232_DATA_8;
@@ -89,6 +95,7 @@ rs232_end(struct rs232_port_t *p)
 
 	if (!rs232_is_port_open(p)) {
 		free(p->pt);
+		free(p->device);
 		free(p);
 		return;
 	}
@@ -102,6 +109,7 @@ rs232_end(struct rs232_port_t *p)
 
 	rs232_close(p);
 	free(p->pt);
+	free(p->device);
 	free(p);
 }
 
@@ -439,7 +447,7 @@ rs232_open(struct rs232_port_t *p)
 
 	dbg(p, "p=%p p->pt=%p\n", (void *)p, p->pt);
 
-	ux->fd = open(p->dev, O_RDWR | O_NOCTTY | O_NDELAY);
+	ux->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (ux->fd < 0) {
 		dbg(p, "open() %d %s\n", errno, strerror(errno));
 		return RS232_ERR_OPEN;
@@ -486,14 +494,6 @@ rs232_open(struct rs232_port_t *p)
 	p->status = RS232_PORT_OPEN;
 
 	return RS232_ERR_NOERROR;
-}
-
-void
-rs232_set_device(struct rs232_port_t *p, const char *device)
-{
-	dbg(p, "p=%p old=%s new=%s\n", (void *)p, p->dev, device);
-	strncpy(p->dev, device, RS232_STRLEN_DEVICE);
-	return;
 }
 
 unsigned int

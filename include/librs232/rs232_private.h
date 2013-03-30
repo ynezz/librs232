@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -24,57 +24,37 @@
  *
  */
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+#pragma once
 
 #include "librs232/rs232.h"
-#include "librs232/rs232_private.h"
-#include "librs232/log.h"
 
-void
-rs232_log(struct rs232_port_t *p, int priority, const char *file,
-	       int line, const char *fn, const char *format, ...)
-{
-	va_list args;
+#ifdef __GNUC__
+typedef void (*rs232_log_fn)(struct rs232_port_t *p, int priority, const char *file,
+			     int line, const char *fn, const char *format, va_list args)
+			     __attribute__ ((format (printf, 6, 0)));
+#else
+typedef void (*rs232_log_fn)(struct rs232_port_t *p, int priority, const char *file,
+			     int line, const char *fn, const char *format, va_list args);
+#endif
 
-	va_start(args, format);
-	p->log_fn(p, priority, file, line, fn, format, args);
-	va_end(args);
-}
+struct rs232_port_t {
+	char *device;
+	void *pt; /* platform specific stuff */
+	void *userdata;
+#ifdef RS232_WITH_LOGGING
+	rs232_log_fn log_fn;
+	int log_priority;
+#endif
+	enum rs232_baud_e baud;
+	enum rs232_data_e data;
+	enum rs232_stop_e stop;
+	enum rs232_flow_e flow;
+	enum rs232_parity_e parity;
+	enum rs232_status_e status;
+	enum rs232_dtr_e dtr;
+	enum rs232_rts_e rts;
+};
 
-void
-rs232_log_stderr(struct rs232_port_t *p, int priority, const char *file,
-		 int line, const char *fn, const char *format, va_list args)
-{
-	/* unused */
-	(void) p;
-	(void) file;
-	(void) line;
-	(void) priority;
-
-	fprintf(stderr, "librs232: %s[%d]: ", fn, line);
-	vfprintf(stderr, format, args);
-}
-
-void
-rs232_set_log_fn(struct rs232_port_t *p, void (*log_fn)(struct rs232_port_t *p,
-		 int priority, const char *file, int line, const char *fn,
-		 const char *format, va_list args))
-{
-	p->log_fn = log_fn;
-}
-
-int
-rs232_get_log_priority(struct rs232_port_t *p)
-{
-	return p->log_priority;
-}
-
-void
-rs232_set_log_priority(struct rs232_port_t *p, int priority)
-{
-	p->log_priority = priority;
-}
+const char * rs232_hex_dump(const void *data, unsigned int len);
+const char * rs232_ascii_dump(const void *data, unsigned int len);
 

@@ -34,8 +34,11 @@
 #endif
 
 #include "librs232/rs232.h"
+#include "librs232/rs232_private.h"
 #include "librs232/log.h"
 #include "librs232/timer.h"
+
+#define RS232_PORT_WIN32 "COM1"
 
 static wchar_t *
 a2w(const char *astr)
@@ -104,8 +107,8 @@ rs232_init(void)
 	if (p->pt == NULL)
 		return NULL;
 
-	memset(p->dev, 0, RS232_STRLEN_DEVICE+1);
-	strncpy(p->dev, RS232_PORT_WIN32, RS232_STRLEN_DEVICE);
+	memset(p->pt, 0, sizeof(struct rs232_windows_t));
+	p->device = strdup(RS232_PORT_WIN32);
 
 	p->baud = RS232_BAUD_115200;
 	p->data = RS232_DATA_8;
@@ -180,6 +183,7 @@ rs232_end(struct rs232_port_t *p)
 
 	if (!rs232_is_port_open(p)) {
 		free(p->pt);
+		free(p->device);
 		free(p);
 		return;
 	}
@@ -198,6 +202,7 @@ rs232_end(struct rs232_port_t *p)
 
 	rs232_close(p);
 	free(p->pt);
+	free(p->device);
 	free(p);
 }
 
@@ -379,8 +384,9 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 static char *
 fix_device_name(char *device)
 {
+#define STRLEN_DEVICE 256
 	char *s = device;
-	static char ret[RS232_STRLEN_DEVICE+1] = {0};
+	static char ret[STRLEN_DEVICE+1] = {0};
 
 	while (*s && !isdigit(*s))
 		s++;
@@ -388,9 +394,9 @@ fix_device_name(char *device)
 	if (s && (atoi(s) > 0)) {
 		/* meh, Windows CE is special and can't handle URN path, just COM1: format */
 #ifndef UNDER_CE
-		snprintf(ret, RS232_STRLEN_DEVICE, "\\\\.\\COM%s", s);
+		snprintf(ret, STRLEN_DEVICE, "\\\\.\\COM%s", s);
 #else
-		snprintf(ret, RS232_STRLEN_DEVICE, "COM%s:", s);
+		snprintf(ret, STRLEN_DEVICE, "COM%s:", s);
 #endif
 		return ret;
 	}
@@ -401,11 +407,11 @@ fix_device_name(char *device)
 RS232_LIB unsigned int
 rs232_open(struct rs232_port_t *p)
 {
-	wchar_t *wname = a2w(fix_device_name(p->dev));
+	wchar_t *wname = a2w(fix_device_name(p->device));
 	struct rs232_windows_t *wx = p->pt;
 
 	dbg(p, "p=%p p->pt=%p name='%s' fix='%s'\n",
-	    (void *)p, p->pt, p->dev, fix_device_name(p->dev));
+	    (void *)p, p->pt, p->device, fix_device_name(p->device));
 
 	if (wname == NULL)
 		return RS232_ERR_UNKNOWN;
@@ -438,15 +444,6 @@ rs232_open(struct rs232_port_t *p)
 	rs232_set_flow(p, p->flow);
 
 	return RS232_ERR_NOERROR;
-}
-
-RS232_LIB void
-rs232_set_device(struct rs232_port_t *p, const char *device)
-{
-	dbg(p, "p=%p old=%s new=%s\n", (void *)p, p->dev, device);
-	strncpy(p->dev, device, RS232_STRLEN_DEVICE);
-
-	return;
 }
 
 RS232_LIB unsigned int

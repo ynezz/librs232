@@ -30,6 +30,7 @@
 #include <ctype.h>
 
 #include "librs232/rs232.h"
+#include "librs232/rs232_private.h"
 #include "librs232/log.h"
 
 static const char *
@@ -176,15 +177,16 @@ rs232_strrts(unsigned int rts)
 RS232_LIB const char *
 rs232_to_string(struct rs232_port_t *p)
 {
-	static char str[RS232_STRLEN+1];
+#define BUF_LEN 512
+	static char str[BUF_LEN+1] = {0};
 
 	if (p == NULL)
 		return NULL;
 
-	snprintf(str, RS232_STRLEN, "device: %s, baud: %s, data bits: %s,"
+	snprintf(str, BUF_LEN, "device: %s, baud: %s, data bits: %s,"
 					" parity: %s, stop bits: %s,"
 					" flow control: %s",
-					p->dev,
+					p->device,
 					rs232_strbaud(p->baud),
 					rs232_strdata(p->data),
 					rs232_strparity(p->parity),
@@ -197,8 +199,8 @@ rs232_to_string(struct rs232_port_t *p)
 RS232_LIB const char *
 rs232_get_device(struct rs232_port_t *p)
 {
-	dbg(p, "p=%p device: %s\n", (void *)p, p->dev);
-	return p->dev;
+	dbg(p, "p=%p device: %s\n", (void *)p, p->device);
+	return p->device;
 }
 
 RS232_LIB unsigned int
@@ -279,6 +281,15 @@ rs32_get_userdata(struct rs232_port_t *p)
 
 	dbg(p, "p=%p userdata: %p\n", (void *)p, p->userdata);
 	return p->userdata;
+}
+
+void
+rs232_set_device(struct rs232_port_t *p, const char *device)
+{
+	dbg(p, "p=%p old=%s new=%s\n", (void *)p, p->device, device);
+
+	free(p->device);
+	p->device = strdup(device);
 }
 
 const char *

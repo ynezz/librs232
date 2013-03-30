@@ -28,20 +28,8 @@
 #define __LIBRS232_H__
 
 #include <stdarg.h>
-#include <time.h>
 
 #include "version.h"
-
-#define RS232_STRLEN 512
-#define RS232_STRLEN_DEVICE 30
-
-#ifdef __linux__
-#define RS232_PORT_POSIX "/dev/ttyS0"
-#else
-#define RS232_PORT_POSIX "/dev/cua00"
-#endif /* __linux__ */
-
-#define RS232_PORT_WIN32 "COM1"
 
 #if defined(WIN32) || defined(UNDER_CE)
  #include "librs232/rs232_windows.h"
@@ -52,6 +40,8 @@
 #else
  #include "librs232/rs232_posix.h"
 #endif
+
+struct rs232_port_t;
 
 enum rs232_log_e {
 	RS232_LOG_ERROR,
@@ -117,34 +107,6 @@ enum rs232_rts_e {
 	RS232_RTS_MAX
 };
 
-struct rs232_port_t;
-#ifdef __GNUC__
-typedef void (*rs232_log_fn)(struct rs232_port_t *p, int priority, const char *file,
-			     int line, const char *fn, const char *format, va_list args)
-			     __attribute__ ((format (printf, 6, 0)));
-#else
-typedef void (*rs232_log_fn)(struct rs232_port_t *p, int priority, const char *file,
-			     int line, const char *fn, const char *format, va_list args);
-#endif
-
-struct rs232_port_t {
-	char dev[RS232_STRLEN_DEVICE+1];
-	void *pt; /* platform specific stuff */
-	void *userdata;
-#ifdef RS232_WITH_LOGGING
-	rs232_log_fn log_fn;
-	int log_priority;
-#endif
-	enum rs232_baud_e baud;
-	enum rs232_data_e data;
-	enum rs232_stop_e stop;
-	enum rs232_flow_e flow;
-	enum rs232_parity_e parity;
-	enum rs232_status_e status;
-	enum rs232_dtr_e dtr;
-	enum rs232_rts_e rts;
-};
-
 enum rs232_error_e {
 	RS232_ERR_NOERROR,
 	RS232_ERR_UNKNOWN,
@@ -170,9 +132,6 @@ enum rs232_error_e {
 #else
 	#define RS232_LIB
 #endif
-
-const char * rs232_hex_dump(const void *data, unsigned int len);
-const char * rs232_ascii_dump(const void *data, unsigned int len);
 
 RS232_LIB struct rs232_port_t * rs232_init(void);
 RS232_LIB void rs232_end(struct rs232_port_t *p);
