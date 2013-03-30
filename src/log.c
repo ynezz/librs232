@@ -30,15 +30,16 @@
 #include <ctype.h>
 
 #include "librs232/rs232.h"
+#include "librs232/rs232-private.h"
 #include "librs232/log.h"
 
 void
 rs232_log(struct rs232_port_t *p, int priority, const char *file,
 	       int line, const char *fn, const char *format, ...)
 {
-        va_list args;
+	va_list args;
 
-        va_start(args, format);
+	va_start(args, format);
 	p->log_fn(p, priority, file, line, fn, format, args);
 	va_end(args);
 }
@@ -53,8 +54,8 @@ rs232_log_stderr(struct rs232_port_t *p, int priority, const char *file,
 	(void) line;
 	(void) priority;
 
-        fprintf(stderr, "librs232: %s[%d]: ", fn, line);
-        vfprintf(stderr, format, args);
+	fprintf(stderr, "librs232: %s[%d]: ", fn, line);
+	vfprintf(stderr, format, args);
 }
 
 void
