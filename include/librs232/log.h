@@ -60,7 +60,7 @@ static void rs232_log_null(struct rs232_port_t *p, const char *format, ...) {}
    #define dbg(p, ...) rs232_log_null(p, ## __VA_ARGS__)
   #endif
  #define info(p, ...) rs232_log_cond(p, RS232_LOG_INFO, ## __VA_ARGS__)
- #define err(p, ...) rs232_log_cond(p, RS232_LOG_ERR, ## __VA_ARGS__)
+ #define err(p, ...) rs232_log_cond(p, RS232_LOG_ERROR, ## __VA_ARGS__)
 #else
  #define dbg(p, ...) rs232_log_null(p, ## __VA_ARGS__)
  #define info(p, ...) rs232_log_null(p, ## __VA_ARGS__)
