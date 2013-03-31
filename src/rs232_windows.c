@@ -87,7 +87,6 @@ RS232_LIB struct rs232_port_t *
 rs232_init(void)
 {
 	struct rs232_port_t *p = NULL;
-	struct rs232_windows_t *wx = NULL;
 	p = (struct rs232_port_t *) malloc(sizeof(struct rs232_port_t));
 	if (p == NULL)
 		return NULL;
@@ -119,17 +118,11 @@ rs232_init(void)
 	p->dtr = RS232_DTR_OFF;
 	p->rts = RS232_RTS_OFF;
 
-	wx = (struct rs232_windows_t *) p->pt;
-	wx->r_timeout = 500;
-	wx->w_timeout = 500;
-	wx->r_buffer = 1024;
-	wx->w_buffer = 1024;
-
 	return p;
 }
 
 static unsigned int
-port_buffers(struct rs232_port_t *p, unsigned int rb, unsigned int wb)
+port_set_buffers(struct rs232_port_t *p, unsigned int rb, unsigned int wb)
 {
 	struct rs232_windows_t *wx = p->pt;
 
@@ -137,6 +130,10 @@ port_buffers(struct rs232_port_t *p, unsigned int rb, unsigned int wb)
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
+
+	if (wx->r_buffer == rb && wx->w_buffer == wb) {
+		return RS232_ERR_NOERROR;
+	}
 
 	if (!SetupComm(wx->fd, rb, wb)) {
 		dbg(p, "SetupComm() %s\n", last_error());
@@ -150,15 +147,25 @@ port_buffers(struct rs232_port_t *p, unsigned int rb, unsigned int wb)
 }
 
 static unsigned int
-port_timeout(struct rs232_port_t *p, unsigned int rt, unsigned int wt)
+port_set_timeouts(struct rs232_port_t *p, unsigned int rt, unsigned int wt)
 {
 	struct rs232_windows_t *wx = p->pt;
 	COMMTIMEOUTS t;
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
+	
+	if (wx->w_timeout == wt && wx->r_timeout == rt)
+		return RS232_ERR_NOERROR;
 
 	GET_PORT_TIMEOUTS(p, wx->fd, &t);
+
+	if (t.WriteTotalTimeoutConstant == wt &&
+	    t.ReadTotalTimeoutConstant == rt) {
+		wx->w_timeout = wt;
+		wx->r_timeout = rt;
+		return RS232_ERR_NOERROR;
+	}
 
 	t.ReadIntervalTimeout = 0;
 	t.ReadTotalTimeoutMultiplier = 0;
@@ -305,7 +312,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 
 	*read_len = 0;
 
-	if (port_timeout(p, timeout, wx->w_timeout))
+	if (port_set_timeouts(p, timeout, wx->w_timeout))
 		return RS232_ERR_UNKNOWN;
 
 	rs232_oper_start(&ts);
@@ -317,7 +324,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 		return RS232_ERR_READ;
 	}
 
-	if (port_timeout(p, rt, wx->w_timeout))
+	if (port_set_timeouts(p, rt, wx->w_timeout))
 		return RS232_ERR_UNKNOWN;
 
 	*read_len = r;
@@ -379,7 +386,7 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	if (port_timeout(p, wx->r_timeout, timeout))
+	if (port_set_timeouts(p, wx->r_timeout, timeout))
 		return RS232_ERR_UNKNOWN;
 
 	rs232_oper_start(&ts);
@@ -391,7 +398,7 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 		return RS232_ERR_WRITE;
 	}
 
-	if (port_timeout(p, wx->r_timeout, wt))
+	if (port_set_timeouts(p, wx->r_timeout, wt))
 		return RS232_ERR_UNKNOWN;
 
 	*write_len = w;
@@ -454,8 +461,8 @@ rs232_open(struct rs232_port_t *p)
 	GET_PORT_STATE(p, wx->fd, &wx->old_dcb);
 	GET_PORT_TIMEOUTS(p, wx->fd, &wx->old_tm);
 
-	port_timeout(p, wx->r_timeout, wx->w_timeout);
-	port_buffers(p, wx->r_buffer, wx->w_buffer);
+	port_set_timeouts(p, 500, 500);
+	port_set_buffers(p, 1024, 1024);
 
 	rs232_set_baud(p, p->baud);
 	rs232_set_data(p, p->data);
