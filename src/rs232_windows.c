@@ -147,7 +147,7 @@ port_set_buffers(struct rs232_port_t *p, unsigned int rb, unsigned int wb)
 }
 
 static unsigned int
-port_set_timeouts(struct rs232_port_t *p, unsigned int rt, unsigned int wt)
+port_set_timeouts(struct rs232_port_t *p, unsigned int rt, unsigned int wt, int forced)
 {
 	struct rs232_windows_t *wx = p->pt;
 	COMMTIMEOUTS t;
@@ -155,20 +155,16 @@ port_set_timeouts(struct rs232_port_t *p, unsigned int rt, unsigned int wt)
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 	
-	if (wx->w_timeout == wt && wx->r_timeout == rt)
-		return RS232_ERR_NOERROR;
-
 	GET_PORT_TIMEOUTS(p, wx->fd, &t);
 
-	if (t.WriteTotalTimeoutConstant == wt &&
-	    t.ReadTotalTimeoutConstant == rt) {
-		wx->w_timeout = wt;
-		wx->r_timeout = rt;
-		return RS232_ERR_NOERROR;
+	if (forced) {
+		t.ReadIntervalTimeout = 0;
+		t.ReadTotalTimeoutMultiplier = 0;
+	} else {
+		t.ReadIntervalTimeout = MAXDWORD;
+		t.ReadTotalTimeoutMultiplier = MAXDWORD;
 	}
 
-	t.ReadIntervalTimeout = 0;
-	t.ReadTotalTimeoutMultiplier = 0;
 	t.ReadTotalTimeoutConstant = rt;
 	t.WriteTotalTimeoutMultiplier = 0;
 	t.WriteTotalTimeoutConstant = wt;
@@ -276,6 +272,50 @@ rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
 	return RS232_ERR_NOERROR;
 }
 
+static unsigned int
+_read_timeout(struct rs232_port_t *p, unsigned char *buf,
+	      unsigned int buf_len, unsigned int *read_len,
+	      unsigned int timeout, int forced)
+{
+	int ret;
+	tick_t ts;
+	unsigned long r = 0;
+	struct rs232_windows_t *wx = p->pt;
+
+	dbg(p, "p=%p p->pt=%p buf_len: %d timeout: %d forced: %d\n",
+	    (void *)p, p->pt, buf_len, timeout, forced);
+
+	if (!rs232_is_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
+	*read_len = 0;
+
+	if (port_set_timeouts(p, timeout, wx->w_timeout, forced))
+		return RS232_ERR_UNKNOWN;
+
+	rs232_oper_start(&ts);
+	ret = ReadFile(wx->fd, buf, buf_len, &r, NULL);
+	rs232_oper_stop(p, ts);
+	if (!ret) {
+		dbg(p, "ReadFile() %s\n", last_error());
+		return RS232_ERR_READ;
+	}
+
+	*read_len = r;
+	dbg(p, "read_len=%lu hex='%s' ascii='%s'\n", r, rs232_hex_dump(buf, r),
+	    rs232_ascii_dump(buf, r));
+
+	if (*read_len > 0)
+		return RS232_ERR_NOERROR;
+
+	/* oh boy, time measurement - if the timeout is specified to be 500ms, the ReadFile() could return
+	 * after 480msec. So this is a lame way to distinguish if the timeout has happened */
+	if ((rs232_operation_duration(p) + (timeout / 5)) > timeout)
+		return RS232_ERR_TIMEOUT;
+
+	return RS232_ERR_NOERROR;
+}
+
 /* this function waits either for timeout or buf_len bytes,
    whatever happens first and doesn't return earlier */
 RS232_LIB unsigned int
@@ -283,15 +323,7 @@ rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
 		   unsigned int buf_len, unsigned int *read_len,
 		   unsigned int timeout)
 {
-	UNREFERENCED_PARAMETER(p);
-	UNREFERENCED_PARAMETER(buf);
-	UNREFERENCED_PARAMETER(timeout);
-	UNREFERENCED_PARAMETER(read_len);
-	UNREFERENCED_PARAMETER(buf_len);
-
-	/* TODO */
-	dbg(p, "%s\n", "sorry, not implemented yet");
-	return RS232_ERR_UNKNOWN;
+	return _read_timeout(p, buf, buf_len, read_len, timeout, 1);
 }
 
 RS232_LIB unsigned int
@@ -299,42 +331,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 		   unsigned int buf_len, unsigned int *read_len,
 		   unsigned int timeout)
 {
-	int ret;
-	tick_t ts;
-	unsigned long r = 0;
-	struct rs232_windows_t *wx = p->pt;
-	unsigned int rt = wx->r_timeout;
-
-	dbg(p, "p=%p p->pt=%p buf_len: %d timeout: %d\n", (void *)p, p->pt, buf_len, timeout);
-
-	if (!rs232_is_port_open(p))
-		return RS232_ERR_PORT_CLOSED;
-
-	*read_len = 0;
-
-	if (port_set_timeouts(p, timeout, wx->w_timeout))
-		return RS232_ERR_UNKNOWN;
-
-	rs232_oper_start(&ts);
-	ret = ReadFile(wx->fd, buf, buf_len, &r, NULL);
-	rs232_oper_stop(p, ts);
-	if (!ret) {
-		*read_len = 0;
-		dbg(p, "ReadFile() %s\n", last_error());
-		return RS232_ERR_READ;
-	}
-
-	if (port_set_timeouts(p, rt, wx->w_timeout))
-		return RS232_ERR_UNKNOWN;
-
-	*read_len = r;
-	dbg(p, "read_len=%lu hex='%s' ascii='%s'\n", r, rs232_hex_dump(buf, r),
-	    rs232_ascii_dump(buf, r));
-
-	/* TODO - This is lame, since we rely on the fact, that if we read 0 bytes,
-	 * that the read probably timeouted. So we should rather measure the reading
-	 * interval or rework it using overlapped I/O */
-	return *read_len == 0 ? RS232_ERR_TIMEOUT : RS232_ERR_NOERROR;
+	return _read_timeout(p, buf, buf_len, read_len, timeout, 0);
 }
 
 RS232_LIB unsigned int
@@ -379,14 +376,13 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 	tick_t ts;
 	unsigned long w = 0;
 	struct rs232_windows_t *wx = p->pt;
-	unsigned int wt = wx->w_timeout;
 
 	dbg(p, "p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
 
 	if (!rs232_is_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	if (port_set_timeouts(p, wx->r_timeout, timeout))
+	if (port_set_timeouts(p, wx->r_timeout, timeout, 0))
 		return RS232_ERR_UNKNOWN;
 
 	rs232_oper_start(&ts);
@@ -397,9 +393,6 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 		dbg(p, "WriteFile() %s\n", last_error());
 		return RS232_ERR_WRITE;
 	}
-
-	if (port_set_timeouts(p, wx->r_timeout, wt))
-		return RS232_ERR_UNKNOWN;
 
 	*write_len = w;
 	dbg(p, "write_len=%lua hex='%s' ascii='%s'\n", w, rs232_hex_dump(buf, w),
@@ -461,7 +454,7 @@ rs232_open(struct rs232_port_t *p)
 	GET_PORT_STATE(p, wx->fd, &wx->old_dcb);
 	GET_PORT_TIMEOUTS(p, wx->fd, &wx->old_tm);
 
-	port_set_timeouts(p, 500, 500);
+	port_set_timeouts(p, 500, 500, 0);
 	port_set_buffers(p, 1024, 1024);
 
 	rs232_set_baud(p, p->baud);
