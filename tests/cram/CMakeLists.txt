@@ -9,7 +9,15 @@ find_program(
 
 if(CRAM_EXECUTABLE)
 	if(LUA_BINDINGS)
-		add_test(cram-lua-tests ${CRAM_EXECUTABLE} -v ${CMAKE_CURRENT_SOURCE_DIR})
-		set_tests_properties(cram-lua-tests PROPERTIES ENVIRONMENT "LUA_CPATH=${CMAKE_BINARY_DIR}/src/bindings/lua/?.so")
+		file(GLOB LUA_NOHW_TESTS "lua-nohw-*.t")
+		add_test(cram-lua-nohw-tests ${CRAM_EXECUTABLE} -v ${LUA_NOHW_TESTS})
+		set_tests_properties(cram-lua-nohw-tests PROPERTIES ENVIRONMENT "LUA_CPATH=${CMAKE_BINARY_DIR}/src/bindings/lua/?.so")
+
+		if(UNIT_TESTING_PORT_NAME1)
+			file(GLOB LUA_HW_TESTS "lua-hw-*.t")
+			add_test(cram-lua-hw-tests ${CRAM_EXECUTABLE} -v ${LUA_HW_TESTS})
+                        set_tests_properties(cram-lua-hw-tests PROPERTIES ENVIRONMENT "LUA_CPATH=${CMAKE_BINARY_DIR}/src/bindings/lua/?.so")
+                        set_property(TEST cram-lua-hw-tests APPEND PROPERTY ENVIRONMENT "LUA_RS232_PORT_NAME=${UNIT_TESTING_PORT_NAME1}")
+		endif()
 	endif()
 endif()

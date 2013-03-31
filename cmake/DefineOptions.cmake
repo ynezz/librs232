@@ -1,6 +1,7 @@
 option(WITH_LOGGING "Build with logging support" ON)
 option(WITH_DEBUG_LOGGING "Build with debug logging support" OFF)
 option(UNIT_TESTING "Build and run unit tests" OFF)
+option(UNIT_TESTING_PORT_NAME1 "Serial port1 used for testing")
 option(LUA_BINDINGS "Build with Lua bindings" OFF)
 option(LUA_RS232_STATIC "Build Lua bindings with librs232 compiled statically" OFF)
 option(CMOCKA_BIN_DIR "Directory with cmocka.dll - used for testing on Windows")
