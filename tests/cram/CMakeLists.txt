@@ -14,6 +14,13 @@ if(CRAM_EXECUTABLE)
 		set_tests_properties(cram-lua-nohw-tests PROPERTIES ENVIRONMENT "LUA_CPATH=${CMAKE_BINARY_DIR}/src/bindings/lua/?.so")
 
 		if(UNIT_TESTING_PORT_NAME1)
+
+			# Temporary workaround for Jenkins as I need to figure
+			# out how to do this properly between platforms...
+			if(APPLE)
+				set(UNIT_TESTING_PORT_NAME1 "/dev/cu.serial1")
+			endif()
+
 			file(GLOB LUA_HW_TESTS "lua-hw-*.t")
 			add_test(cram-lua-hw-tests ${CRAM_EXECUTABLE} -v ${LUA_HW_TESTS})
                         set_tests_properties(cram-lua-hw-tests PROPERTIES ENVIRONMENT "LUA_CPATH=${CMAKE_BINARY_DIR}/src/bindings/lua/?.so")
