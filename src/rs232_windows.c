@@ -308,8 +308,11 @@ _read_timeout(struct rs232_port_t *p, unsigned char *buf,
 	if (*read_len > 0)
 		return RS232_ERR_NOERROR;
 
-	/* oh boy, time measurement - if the timeout is specified to be 500ms, the ReadFile() could return
-	 * after 480msec. So this is a lame way to distinguish if the timeout has happened */
+	/* 
+	 * oh boy, time measurement - if the timeout is specified to be 500ms, the ReadFile() could return
+	 * after 480msec. So this is a lame way to distinguish if the timeout has happened.
+	 * The smaller timeout values happens on Windows XP, Windows 7 seems to be fine, duration is always > timeout
+	 */
 	if ((rs232_operation_duration(p) + (timeout / 5)) > timeout)
 		return RS232_ERR_TIMEOUT;
 
