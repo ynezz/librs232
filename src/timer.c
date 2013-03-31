@@ -139,24 +139,15 @@ deltatime_t timer_ticks_to_milliseconds( const tick_t dt )
 
 
 #if PLATFORM_WINDOWS
-#if _MSC_VER
-
-struct __timeb64 {
-	__time64_t time;
-	unsigned short millitm;
-	short timezone;
-	short dstflag;
-	};
-_CRTIMP errno_t __cdecl _ftime64_s(_Out_ struct __timeb64 * _Time);
-
-#else /* MinGW */
-#undef __MSVCRT_VERSION__
-#define __MSVCRT_VERSION__ 0x0601 /* needed for __timeb64 & co. */
-#include <sys/timeb.h>
-_CRTIMP void __cdecl _ftime64(struct __timeb64*);
-#define _ftime64_s _ftime64
-
-#endif /* _MSC_VER */
+	#if _MSC_VER
+		#include <sys/timeb.h>
+	#else /* MinGW */
+		#undef __MSVCRT_VERSION__
+		#define __MSVCRT_VERSION__ 0x0601 /* needed for __timeb64 & co. */
+		#include <sys/timeb.h>
+		_CRTIMP void __cdecl _ftime64(struct __timeb64*);
+		#define _ftime64_s _ftime64
+	#endif /* _MSC_VER */
 #endif /* PLATFORM_WINDOWS */
 
 tick_t timer_system( void )
