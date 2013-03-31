@@ -128,6 +128,7 @@ RS232_LIB unsigned int rs232_open(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_is_port_open(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_close(struct rs232_port_t *p);
 RS232_LIB unsigned int rs232_flush(struct rs232_port_t *p);
+RS232_LIB void rs232_flush_qeue(struct rs232_port_t *p);
 RS232_LIB void rs232_set_device(struct rs232_port_t *p, const char *device);
 RS232_LIB unsigned int rs232_set_baud(struct rs232_port_t *p, unsigned int baud);
 RS232_LIB unsigned int rs232_set_stop(struct rs232_port_t *p, unsigned int stop);
@@ -150,7 +151,6 @@ RS232_LIB unsigned int rs232_read_timeout_forced(struct rs232_port_t *p, unsigne
 RS232_LIB unsigned int rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len, unsigned int *write_len);
 RS232_LIB unsigned int rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len, unsigned int *write_len, unsigned int timeout);
 RS232_LIB unsigned int rs232_in_qeue(struct rs232_port_t *p, unsigned int *in_bytes);
-RS232_LIB void rs232_in_qeue_clear(struct rs232_port_t *p);
 RS232_LIB const char * rs232_to_string(struct rs232_port_t *p);
 RS232_LIB const char * rs232_strerror(unsigned int error);
 RS232_LIB const char * rs232_strbaud(unsigned int baud);
