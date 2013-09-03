@@ -105,6 +105,7 @@ static int lua_port_open(lua_State *L)
 	int ret = 0;
 	struct rs232_port_t *p = NULL;
 	struct rs232_port_t **ud = NULL;
+	const char *dev = luaL_checkstring(L, 1);
 
 	p = rs232_init();
 	if (p == NULL) {
@@ -115,7 +116,7 @@ static int lua_port_open(lua_State *L)
 
 	DBG("p=%p \n", (void *)p);
 
-	rs232_set_device(p, (char *) luaL_checkstring(L, 1));
+	rs232_set_device(p, dev);
 	ret = rs232_open(p);
 	if (ret > RS232_ERR_NOERROR) {
 		free(p->pt);
