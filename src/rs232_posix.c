@@ -228,8 +228,8 @@ rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
 
 	FD_ZERO(&set);
 	FD_SET(ux->fd, &set);
-	tv.tv_sec = 0;
-	tv.tv_usec = timeout * 1000;
+	tv.tv_sec = (timeout * 1000) / 1000000;
+	tv.tv_usec = (timeout * 1000) % 1000000;
 
 	*read_len = 0;
 	gettimeofday(&t1, NULL);
@@ -310,8 +310,8 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 
 	FD_ZERO(&set);
 	FD_SET(ux->fd, &set);
-	tv.tv_sec = 0;
-	tv.tv_usec = timeout * 1000;
+	tv.tv_sec = (timeout * 1000) / 1000000;
+	tv.tv_usec = (timeout * 1000) % 1000000;
 	*read_len = 0;
 
 	ret = select(ux->fd+1, &set, NULL, NULL, &tv);
@@ -388,8 +388,8 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 
 	FD_ZERO(&set);
 	FD_SET(ux->fd, &set);
-	tv.tv_sec = 0;
-	tv.tv_usec = timeout * 1000;
+	tv.tv_sec = (timeout * 1000) / 1000000;
+	tv.tv_usec = (timeout * 1000) % 1000000;
 	*write_len = 0;
 
 	ret = select(ux->fd+1, NULL, &set, NULL, &tv);
