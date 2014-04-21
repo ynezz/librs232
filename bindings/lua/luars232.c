@@ -37,6 +37,10 @@
 #define MODULE_BUILD "$Id: luars232.c 15 2011-02-23 09:02:20Z sp $"
 #define MODULE_COPYRIGHT "Copyright (c) 2011 Petr Stetiar <ynezz@true.cz>, Gaben Ltd."
 
+#ifndef luaL_reg
+#define luaL_reg luaL_Reg
+#endif
+
 static struct {
 	const char *name;
 	unsigned long value;
@@ -437,7 +441,7 @@ static void create_metatables(lua_State *L, const char *name, const luaL_reg *me
 	luaL_newmetatable(L, name);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
-	luaL_register(L, NULL, methods);
+	luaL_setfuncs(L, methods, 0);
 }
 
 RS232_LIB int luaopen_luars232(lua_State *L);
@@ -445,7 +449,7 @@ RS232_LIB int luaopen_luars232(lua_State *L)
 {
 	int i;
 	create_metatables(L, MODULE_NAMESPACE, port_methods);
-	luaL_register(L, MODULE_NAMESPACE, port_functions);
+	luaL_newlib(L, port_functions);
 
 	for (i = 0; luars232_ulong_consts[i].name != NULL; i++) {
 		lua_pushstring(L, luars232_ulong_consts[i].name);
@@ -468,5 +472,5 @@ RS232_LIB int luaopen_luars232(lua_State *L)
 	DBG("[*] luaopen_luars232(Version: '%s' Build: '%s' TimeStamp: '%s')\n",
 	    MODULE_VERSION, MODULE_BUILD, MODULE_TIMESTAMP);
 
-	return 0;
+	return 1;
 }
