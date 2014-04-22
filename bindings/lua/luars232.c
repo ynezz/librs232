@@ -269,6 +269,18 @@ static int lua_port_close(lua_State *L)
 	return 1;
 }
 
+/* __gc */
+static int lua_port_gc(lua_State *L)
+{
+	struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+
+	if (p == NULL) {
+		rs232_end(p);
+	}
+
+	return 1;
+}
+
 /* error = port:flush() */
 static int lua_port_flush(lua_State *L)
 {
@@ -392,7 +404,7 @@ FN_GET_PORT_STRING(rts)
 
 static luaL_reg port_methods[] = {
 	{ "__tostring", lua_port_tostring },
-	{ "__gc", lua_port_close },
+	{ "__gc", lua_port_gc },
 	{ "read", lua_port_read },
 	{ "write", lua_port_write },
 	{ "close", lua_port_close },
