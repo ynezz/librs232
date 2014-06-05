@@ -453,7 +453,11 @@ static void create_metatables(lua_State *L, const char *name, const luaL_reg *me
 	luaL_newmetatable(L, name);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
+#if LUA_VERSION_NUM < 502
+	luaL_register(L, NULL, methods);
+#else
 	luaL_setfuncs(L, methods, 0);
+#endif
 }
 
 RS232_LIB int luaopen_luars232(lua_State *L);
@@ -461,7 +465,11 @@ RS232_LIB int luaopen_luars232(lua_State *L)
 {
 	int i;
 	create_metatables(L, MODULE_NAMESPACE, port_methods);
+#if LUA_VERSION_NUM < 502
+	luaL_register(L, MODULE_NAMESPACE, port_functions);
+#else
 	luaL_newlib(L, port_functions);
+#endif
 
 	for (i = 0; luars232_ulong_consts[i].name != NULL; i++) {
 		lua_pushstring(L, luars232_ulong_consts[i].name);

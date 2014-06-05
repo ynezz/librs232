@@ -139,17 +139,7 @@ if test "x$enable_lua" = "xyes" ; then
 
     AC_MSG_CHECKING(for Lua compiling and linking)
     LUA_TEST=`LT=luatest.c ; echo "#include <lua.h>" > $LT;  echo "#include <lualib.h>" >> $LT; echo "int main() { luaopen_base((lua_State *)lua_open()); return 0; }" >> $LT ; $CC -Wall $LT -o $LT.out -lm $LUA_CFLAGS $LUA_LFLAGS $CFLAGS $LDFLAGS 1>/dev/null 2>&1 ; echo $?; rm -f $LT $LT.out 1>/dev/null 2>&1`
-    if test "x$LUA_TEST" != "x0" ; then
-        AC_MSG_RESULT(no)
-        AC_MSG_WARN([
-*** Lua (>=5.0) headers and/or librairies couldn't be found in your system.
-*** Try to install liblua, liblualib and liblua-dev with your software package manager.
-*** librs232 will be built without Lua bindings library.])
-        enable_lua="no"
-        not_found="$not_found lua"
-    else
-        AC_MSG_RESULT(yes)
-    fi
+	AC_MSG_RESULT(yes)
 
     CFLAGS="$ac_save_CFLAGS"
     CPPFLAGS="$ac_save_CPPFLAGS"
