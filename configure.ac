@@ -165,7 +165,7 @@ fi
 AM_CONDITIONAL(BUILD_LUA,     test "$enable_lua" = "yes")
 # Lua end
 
-AM_CONDITIONAL(BUILD_TEST, 1)
+AM_CONDITIONAL(BUILD_TEST, true)
 
 AC_ARG_WITH()
 AC_OUTPUT(Makefile src/Makefile bindings/Makefile bindings/lua/Makefile include/Makefile include/librs232/Makefile src/librs232.pc)
