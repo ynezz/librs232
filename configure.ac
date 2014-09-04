@@ -106,7 +106,7 @@ if test "x$enable_lua" = "xyes" ; then
             LUA_CFLAGS="$CFLAGS"
         fi
         LDFLAGS="$LDFLAGS -lm"
-        for l in "$lua_suffix" "" "51" "5.1" "50" "5.0" ; do
+        for l in "$lua_suffix" "" "52" "5.2" "51" "5.1" "50" "5.0" ; do
             AC_CHECK_LIB(lua$l,lua_call,ac_found_lua_lib="yes",ac_found_lua_lib="no")
             if test "x$ac_found_lua_lib" = "xyes" ; then
 	        LUA_VERSION=">=5.1.0"	       
@@ -138,7 +138,7 @@ if test "x$enable_lua" = "xyes" ; then
     fi
 
     AC_MSG_CHECKING(for Lua compiling and linking)
-    LUA_TEST=`LT=luatest.c ; echo "#include <lua.h>" > $LT;  echo "#include <lualib.h>" >> $LT; echo "int main() { luaopen_base((lua_State *)lua_open()); return 0; }" >> $LT ; $CC -Wall $LT -o $LT.out -lm $LUA_CFLAGS $LUA_LFLAGS $CFLAGS $LDFLAGS 1>/dev/null 2>&1 ; echo $?; rm -f $LT $LT.out 1>/dev/null 2>&1`
+    LUA_TEST=`LT=luatest.c ; echo "#include <lua.h>" > $LT;  echo "#include <lualib.h>" >> $LT; echo "int main() { luaopen_base((lua_State *)luaL_newstate()); return 0; }" >> $LT ; $CC -Wall $LT -o $LT.out -lm $LUA_CFLAGS $LUA_LFLAGS $CFLAGS $LDFLAGS 1>/dev/null 2>&1 ; echo $?; rm -f $LT $LT.out 1>/dev/null 2>&1`
     if test "x$LUA_TEST" != "x0" ; then
         AC_MSG_RESULT(no)
         AC_MSG_WARN([

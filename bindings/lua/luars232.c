@@ -386,7 +386,7 @@ FN_GET_PORT_STRING(flow)
 FN_GET_PORT_STRING(dtr)
 FN_GET_PORT_STRING(rts)
 
-static luaL_reg port_methods[] = {
+static luaL_Reg port_methods[] = {
 	{ "__tostring", lua_port_tostring },
 	{ "__gc", lua_port_close },
 	{ "read", lua_port_read },
@@ -426,13 +426,13 @@ static luaL_reg port_methods[] = {
 	{ NULL, NULL }
 };
 
-static luaL_reg port_functions[] = {
+static luaL_Reg port_functions[] = {
 	{ "open", lua_port_open },
 	{ "error_tostring", lua_port_strerror },
 	{ NULL, NULL }
 };
 
-static void create_metatables(lua_State *L, const char *name, const luaL_reg *methods)
+static void create_metatables(lua_State *L, const char *name, const luaL_Reg *methods)
 {
 	luaL_newmetatable(L, name);
 	lua_pushvalue(L, -1);
