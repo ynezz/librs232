@@ -6,7 +6,7 @@ else
 AM_CFLAGS_EXTRA = -O2
 endif
 
-INCLUDES = $(all_includes) -I$(top_srcdir)/include $(LUA_CFLAGS)
+AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include $(LUA_CFLAGS)
 AM_CFLAGS = -Wall -ansi -pedantic -W -Wmissing-prototypes -Wmissing-declarations -Werror -std=gnu99 $(AM_CFLAGS_EXTRA)
 
 lib_LTLIBRARIES = librs232.la
