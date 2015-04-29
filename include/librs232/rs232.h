@@ -40,10 +40,12 @@
 
 #define RS232_PORT_WIN32 "COM1"
 
-#if defined(WIN32) || defined(UNDER_CE)
+#if defined(WIN32) || defined(UNDER_CE) || defined(_MSC_VER)
  #include "librs232/rs232_windows.h"
- #pragma warning(disable:4996)
- #define snprintf _snprintf
+ #ifdef _MSC_VER
+  #pragma warning(disable:4996)
+  #define snprintf _snprintf
+ #endif
 #else
  #include "librs232/rs232_posix.h"
 #endif

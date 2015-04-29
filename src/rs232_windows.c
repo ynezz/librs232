@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #ifndef UNDER_CE
 #include <errno.h>
@@ -55,10 +56,11 @@ a2w(const char *astr)
 	return ret;
 }
 
+#ifdef RS232_DEBUG
 static char * last_error(void)
 {
-	unsigned long err = 0;
-	unsigned long ret = 0;
+	DWORD err = 0;
+	DWORD ret = 0;
 	static char errbuf[MAX_PATH+1] = {0};
 	static char retbuf[MAX_PATH+1] = {0};
 
@@ -67,13 +69,14 @@ static char * last_error(void)
 	if (ret != 0) {
 		/* CRLF fun */
 		errbuf[ret-2] = 0;
-		snprintf(retbuf, MAX_PATH, "LastError: %s (%d)", errbuf, ret);
+		snprintf(retbuf, MAX_PATH, "LastError: %s (%ld)", errbuf, ret);
 	}
 	else
-		snprintf(retbuf, MAX_PATH, "LastError: %d (FormatMessageA failed)", ret);
+		snprintf(retbuf, MAX_PATH, "LastError: %ld (FormatMessageA failed)", ret);
 
 	return retbuf;
 }
+#endif
 
 RS232_LIB struct rs232_port_t *
 rs232_init(void)
@@ -222,9 +225,9 @@ rs232_in_queue_clear(struct rs232_port_t *p)
 
 RS232_LIB unsigned int
 rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
-	   unsigned int *read_len)
+	unsigned int *read_len)
 {
-	unsigned int r = 0;
+	DWORD r = 0;
 	struct rs232_windows_t *wx = p->pt;
 
 	DBG("p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
@@ -268,7 +271,7 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 		   unsigned int buf_len, unsigned int *read_len,
 		   unsigned int timeout)
 {
-	unsigned int r = 0;
+	DWORD r = 0;
 	struct rs232_windows_t *wx = p->pt;
 	unsigned int rt = wx->r_timeout;
 
@@ -305,7 +308,7 @@ RS232_LIB unsigned int
 rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len,
 		unsigned int *write_len)
 {
-	unsigned int w = 0;
+	DWORD w = 0;
 	struct rs232_windows_t *wx = p->pt;
 
 	DBG("p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
@@ -334,7 +337,7 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 			unsigned int buf_len, unsigned int *write_len,
 			unsigned int timeout)
 {
-	unsigned int w = 0;
+	DWORD w = 0;
 	struct rs232_windows_t *wx = p->pt;
 	unsigned int wt = wx->w_timeout;
 
