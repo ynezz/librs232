@@ -1,9 +1,14 @@
 .svn
 *.o
+*.obj
 *.lo
 *.la
 .deps/
 .libs
+*.d
+*.exp
+*.lib
+*.dll
 *.ncb
 *.sln
 *.suo
