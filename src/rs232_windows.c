@@ -218,9 +218,19 @@ rs232_in_queue(struct rs232_port_t *p, unsigned int *in_bytes)
 RS232_LIB void
 rs232_in_queue_clear(struct rs232_port_t *p)
 {
-	/* TODO */
-	UNREFERENCED_PARAMETER(p);
-	DBG("%s\n", "sorry, not implemented yet");
+	struct rs232_windows_t *wx = p->pt;
+
+	DBG("p=%p p->pt=%p\n", (void *)p, p->pt);
+
+	if (!rs232_port_open(p))
+		return;
+
+	if (!PurgeComm(wx->fd, PURGE_TXABORT | PURGE_TXCLEAR)) {
+		DBG("PurgeComm() %s\n", last_error());
+		return;
+	}
+
+	return;
 }
 
 RS232_LIB unsigned int

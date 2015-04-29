@@ -95,7 +95,7 @@ rs232_end(struct rs232_port_t *p)
 }
 
 unsigned int
-rs232_in_qeue(struct rs232_port_t *p, unsigned int *in_bytes)
+rs232_in_queue(struct rs232_port_t *p, unsigned int *in_bytes)
 {
 	fd_set set;
 	int ret;
@@ -131,7 +131,7 @@ rs232_in_qeue(struct rs232_port_t *p, unsigned int *in_bytes)
 /* some USB<->RS232 converters buffer a lot, so this function tries to discard
    this buffer - useful mainly after rs232_open() */
 void
-rs232_in_qeue_clear(struct rs232_port_t *p)
+rs232_in_queue_clear(struct rs232_port_t *p)
 {
 	fd_set set;
 	unsigned int ret;

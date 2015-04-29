@@ -235,6 +235,28 @@ static int lua_port_in_queue(lua_State *L)
 	return 2;
 }
 
+/* 
+ * error = port:in_queue_clear()
+ */
+static int lua_port_in_queue_clear(lua_State *L)
+{
+	int ret = 0;
+	struct rs232_port_t *p = NULL;
+	unsigned int in_bytes = 0;
+
+	p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	lua_remove(L, 1);
+
+	if (p == NULL || !rs232_port_open(p)) {
+		lua_pushinteger(L, RS232_ERR_PORT_CLOSED);
+		return 1;
+	}
+
+	rs232_in_queue_clear(p);
+	lua_pushinteger(L, RS232_ERR_NOERROR);
+	return 1;
+}
+
 /*
  * error, written_len = port:write(data [, timeout_ms])
  */
@@ -437,6 +459,7 @@ static luaL_reg port_methods[] = {
 	{ "device", lua_port_device },
 	{ "fd", lua_port_fd },
 	{ "in_queue", lua_port_in_queue },
+	{ "in_queue_clear", lua_port_in_queue_clear },
 	/* baud */
 	{ "baud_rate", lua_port_get_baud },
 	{ "baud_rate_tostring", lua_port_get_strbaud },
