@@ -131,14 +131,6 @@ local function F(e, ...)
   return true, ...
 end
 
-local function F2(e, ...)
-  if e ~= rs232.RS232_ERR_NOERROR then
-    return nil, RS232Error.new(e)
-  end
-
-  return ...
-end
-
 local Port = class() do
 
 function Port:__init(name, opt)
@@ -205,7 +197,9 @@ end
 function Port:read(...)
   local ok, data, len = F(self._p:read(...))
   if not ok then return nil, data end
+
   if len == 0 then data = data or '' end
+
   return data
 end
 
@@ -361,5 +355,7 @@ end
 end
 
 return setmetatable({
-  port = Port.new;
+  port  = Port.new;
+  error = RS232Error.new;
+  ERROR = ERROR;
 },{__index = rs232})

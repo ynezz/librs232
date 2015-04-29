@@ -7,7 +7,7 @@ DEFINES = L{DEFINES, 'RS232_EXPORT'}
 luars232 = c.shared{'luars232',
   src      = {
     J('src', 'rs232.c'),
-    J('src', IF(WINDOWS or MSVC, 'rs232_windows.c', 'rs232_posix.c')),
+    J('src', IF(WINDOWS, 'rs232_windows.c', 'rs232_posix.c')),
     J('bindings', 'lua', 'luars232.c'),
   },
   incdir   = 'include',
