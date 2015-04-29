@@ -399,7 +399,7 @@ static int lua_port_strerror(lua_State *L)
 	static int lua_port_set_##type(lua_State *L) \
 	{ \
 		struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE); \
-		lua_pushnumber(L, rs232_set_##type(p, (unsigned int) luaL_checknumber(L, 2))); \
+		lua_pushinteger(L, rs232_set_##type(p, (unsigned int) luaL_checknumber(L, 2))); \
 		return 1; \
 	} \
 
@@ -407,7 +407,7 @@ static int lua_port_strerror(lua_State *L)
 	static int lua_port_get_##type(lua_State *L) \
 	{ \
 		struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE); \
-		lua_pushnumber(L, rs232_get_##type(p)); \
+		lua_pushinteger(L, rs232_get_##type(p)); \
 		return 1; \
 	}
 
