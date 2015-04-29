@@ -154,7 +154,8 @@ static int lua_port_read(lua_State *L)
 	unsigned int timeout = 0;
 	unsigned int len = 0;
 	unsigned int bytes_read = 0;
-	unsigned char *data = NULL;
+	unsigned char tmp[128];
+	unsigned char *data = tmp;
 	struct rs232_port_t *p = NULL;
 
 	p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
@@ -168,18 +169,18 @@ static int lua_port_read(lua_State *L)
 	}
 
 	argc = lua_gettop(L);
+	len = (unsigned int) luaL_checkinteger(L, 1);
+	if(len > sizeof(tmp)){
+		data = (unsigned char*) malloc(len);
+		memset(data, 0, len);
+	}
+
 	switch (argc) {
 	case 1:
-		len = (unsigned int) luaL_checkinteger(L, 1);
-		data = (unsigned char*) malloc(len * sizeof(unsigned char *));
-		memset(data, 0, len);
 		ret = rs232_read(p, data, len, &bytes_read);
 		break;
 	case 2:
 	case 3:
-		len = (unsigned int) luaL_checknumber(L, 1);
-		data = (unsigned char*) malloc(len * sizeof(unsigned char *));
-		memset(data, 0, len);
 		timeout = (unsigned int) luaL_checknumber(L, 2);
 		forced = luaL_optint(L, 3, 0);
 		if (forced > 0)
@@ -203,11 +204,35 @@ static int lua_port_read(lua_State *L)
 	else
 		lua_pushnil(L);
 
-	if (data)
+	if (data != tmp)
 		free(data);
 
 	lua_pushinteger(L, bytes_read);
 	return 3;
+}
+
+/* 
+ * error, bytes = port:in_queue()
+ */
+static int lua_port_in_queue(lua_State *L)
+{
+	int ret = 0;
+	struct rs232_port_t *p = NULL;
+	unsigned int in_bytes = 0;
+
+	p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	lua_remove(L, 1);
+
+	if (p == NULL || !rs232_port_open(p)) {
+		lua_pushinteger(L, RS232_ERR_PORT_CLOSED);
+		lua_pushinteger(L, 0);
+		return 2;
+	}
+
+	ret = rs232_in_queue(p, &in_bytes);
+	lua_pushinteger(L, ret);
+	lua_pushinteger(L, in_bytes);
+	return 2;
 }
 
 /*
@@ -411,6 +436,7 @@ static luaL_reg port_methods[] = {
 	{ "flush", lua_port_flush },
 	{ "device", lua_port_device },
 	{ "fd", lua_port_fd },
+	{ "in_queue", lua_port_in_queue },
 	/* baud */
 	{ "baud_rate", lua_port_get_baud },
 	{ "baud_rate_tostring", lua_port_get_strbaud },

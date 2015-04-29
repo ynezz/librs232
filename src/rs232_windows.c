@@ -188,7 +188,7 @@ rs232_end(struct rs232_port_t *p)
 }
 
 RS232_LIB unsigned int
-rs232_in_qeue(struct rs232_port_t *p, unsigned int *in_bytes)
+rs232_in_queue(struct rs232_port_t *p, unsigned int *in_bytes)
 {
 	COMSTAT cs;
 	unsigned long errmask = 0;
@@ -213,7 +213,7 @@ rs232_in_qeue(struct rs232_port_t *p, unsigned int *in_bytes)
 /* some USB<->RS232 converters buffer a lot, so this function tries to discard
    this buffer - useful mainly after rs232_open() */
 RS232_LIB void
-rs232_in_qeue_clear(struct rs232_port_t *p)
+rs232_in_queue_clear(struct rs232_port_t *p)
 {
 	/* TODO */
 	UNREFERENCED_PARAMETER(p);
@@ -396,9 +396,8 @@ rs232_open(struct rs232_port_t *p)
 	if (wname == NULL)
 		return RS232_ERR_UNKNOWN;
 
-	wx->fd = CreateFile(wname, GENERIC_READ | GENERIC_WRITE,
-			    FILE_SHARE_READ | FILE_SHARE_WRITE,
-			    NULL, OPEN_EXISTING, 0, NULL);
+	wx->fd = CreateFileW(wname, GENERIC_READ | GENERIC_WRITE,
+			0, NULL, OPEN_EXISTING, 0, NULL);
 
 	if (wname)
 		free(wname);
@@ -409,7 +408,7 @@ rs232_open(struct rs232_port_t *p)
 	}
 
 	p->status = RS232_PORT_OPEN;
-	rs232_flush(p);
+  rs232_flush(p);
 
 	GET_PORT_STATE(wx->fd, &wx->old_dcb);
 	GET_PORT_TIMEOUTS(wx->fd, &wx->old_tm);
@@ -533,10 +532,10 @@ rs232_set_rts(struct rs232_port_t *p, enum rs232_rts_e state)
 	GET_PORT_STATE(wx->fd, &pdcb);
 
 	switch (state) {
-	case RS232_DTR_OFF:
+	case RS232_RTS_OFF:
 		pdcb.fRtsControl = RTS_CONTROL_DISABLE;
 		break;
-	case RS232_DTR_ON:
+	case RS232_RTS_ON:
 		pdcb.fRtsControl = RTS_CONTROL_ENABLE;
 		break;
 	default:
@@ -744,7 +743,7 @@ rs232_fd(struct rs232_port_t *p)
 {
 	struct rs232_windows_t *wx = p->pt;
 
-	DBG("p=%p p->pt=%p wx->fd=%d\n", (void *)p, p->pt, wx->fd);
+	DBG("p=%p p->pt=%p wx->fd=%p\n", (void *)p, p->pt, wx->fd);
 
 	return (unsigned int) wx->fd;
 }
