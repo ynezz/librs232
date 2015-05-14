@@ -61,8 +61,8 @@ static char * last_error(void)
 {
 	DWORD err = 0;
 	DWORD ret = 0;
-	static char errbuf[MAX_PATH+1] = {0};
-	static char retbuf[MAX_PATH+1] = {0};
+	char errbuf[MAX_PATH+1] = {0};
+	char retbuf[MAX_PATH+1] = {0};
 
 	err = GetLastError();
 	ret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, 0, errbuf, MAX_PATH, NULL);
@@ -379,7 +379,7 @@ static char *
 fix_device_name(char *device)
 {
 	char *s = device;
-	static char ret[RS232_STRLEN_DEVICE+1] = {0};
+	char ret[RS232_STRLEN_DEVICE+1] = {0};
 
 	while (*s && !isdigit(*s))
 		s++;
@@ -421,7 +421,7 @@ rs232_open(struct rs232_port_t *p)
 	}
 
 	p->status = RS232_PORT_OPEN;
-  rs232_flush(p);
+	rs232_flush(p);
 
 	GET_PORT_STATE(wx->fd, &wx->old_dcb);
 	GET_PORT_TIMEOUTS(wx->fd, &wx->old_tm);
