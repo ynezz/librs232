@@ -312,3 +312,13 @@ rs232_get_rts(struct rs232_port_t *p)
 	DBG("p=%p rts: %d\n", (void *)p, p->rts);
 	return p->rts;
 }
+
+RS232_LIB unsigned int
+rs232_in_qeue(struct rs232_port_t *p, unsigned int *in_bytes){
+	return rs232_in_queue(p, in_bytes);
+}
+
+RS232_LIB void
+rs232_in_qeue_clear(struct rs232_port_t *p){
+	return rs232_in_queue_clear(p);
+}

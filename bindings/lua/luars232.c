@@ -240,9 +240,7 @@ static int lua_port_in_queue(lua_State *L)
  */
 static int lua_port_in_queue_clear(lua_State *L)
 {
-	int ret = 0;
 	struct rs232_port_t *p = NULL;
-	unsigned int in_bytes = 0;
 
 	p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 	lua_remove(L, 1);
