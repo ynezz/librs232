@@ -61,8 +61,8 @@ static char * last_error(void)
 {
 	DWORD err = 0;
 	DWORD ret = 0;
-	static char errbuf[MAX_PATH+1] = {0};
-	static char retbuf[MAX_PATH+1] = {0};
+	char errbuf[MAX_PATH+1] = {0};
+	char retbuf[MAX_PATH+1] = {0};
 
 	err = GetLastError();
 	ret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, 0, errbuf, MAX_PATH, NULL);
@@ -376,10 +376,9 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 }
 
 static char *
-fix_device_name(char *device)
+fix_device_name(char *device, char *ret)
 {
 	char *s = device;
-	static char ret[RS232_STRLEN_DEVICE+1] = {0};
 
 	while (*s && !isdigit(*s))
 		s++;
@@ -400,11 +399,12 @@ fix_device_name(char *device)
 RS232_LIB unsigned int
 rs232_open(struct rs232_port_t *p)
 {
-	wchar_t *wname = a2w(fix_device_name(p->dev));
+	char tmp[RS232_STRLEN_DEVICE+1] = {0};
+	wchar_t *wname = a2w(fix_device_name(p->dev, tmp));
 	struct rs232_windows_t *wx = p->pt;
 
 	DBG("p=%p p->pt=%p name='%s' fix='%s'\n",
-	    (void *)p, p->pt, p->dev, fix_device_name(p->dev));
+	    (void *)p, p->pt, p->dev, fix_device_name(p->dev, tmp));
 
 	if (wname == NULL)
 		return RS232_ERR_UNKNOWN;
@@ -421,7 +421,7 @@ rs232_open(struct rs232_port_t *p)
 	}
 
 	p->status = RS232_PORT_OPEN;
-  rs232_flush(p);
+	rs232_flush(p);
 
 	GET_PORT_STATE(wx->fd, &wx->old_dcb);
 	GET_PORT_TIMEOUTS(wx->fd, &wx->old_tm);

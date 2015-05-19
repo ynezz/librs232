@@ -161,6 +161,11 @@ function Port:set(port_opt)
     if not ok then return nil, err end
   end
 
+  if port_opt.baud_rate ~= nil then
+    ok, err = self:set_baud_rate(port_opt.baud_rate)
+    if not ok then return nil, err end
+  end
+
   if port_opt.data_bits ~= nil then
     ok, err = self:set_data_bits(port_opt.data_bits)
     if not ok then return nil, err end
@@ -251,7 +256,7 @@ local function check_val(value, NAMES, VALUES)
 end
 
 function Port:set_baud_rate(value)
-  local v = check_val(value, BAUD_NAMES, BOUD)
+  local v = check_val(value, BAUD_NAMES, BAUD)
 
   local ok, err = F(self._p:set_baud_rate(v))
   if not ok then return nil, err end
