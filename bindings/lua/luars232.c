@@ -182,7 +182,7 @@ static int lua_port_read(lua_State *L)
 	case 2:
 	case 3:
 		timeout = (unsigned int) luaL_checknumber(L, 2);
-		forced = luaL_optint(L, 3, 0);
+		forced = luaL_optinteger(L, 3, 0);
 		if (forced > 0)
 			ret = rs232_read_timeout_forced(p, data, len, &bytes_read, timeout);
 		else
