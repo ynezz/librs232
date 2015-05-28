@@ -35,6 +35,19 @@
 
 #include "librs232/rs232.h"
 
+typedef DWORD monotonic_time_t;
+typedef DWORD monotonic_diff_t;
+
+static monotonic_time_t GetMonotonicTime(){
+	return GetTickCount();
+}
+
+static monotonic_diff_t GetMonotonicDelta(monotonic_time_t StartTime, monotonic_time_t EndTime){
+	if(StartTime > EndTime)
+		return (MAXDWORD - StartTime) + EndTime;
+	return EndTime - StartTime;
+}
+
 static wchar_t *
 a2w(const char *astr)
 {
@@ -267,15 +280,26 @@ rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
 		   unsigned int buf_len, unsigned int *read_len,
 		   unsigned int timeout)
 {
-	UNREFERENCED_PARAMETER(p);
-	UNREFERENCED_PARAMETER(buf);
-	UNREFERENCED_PARAMETER(timeout);
-	UNREFERENCED_PARAMETER(read_len);
-	UNREFERENCED_PARAMETER(buf_len);
+	monotonic_time_t started = GetMonotonicTime();
 
-	/* TODO */
-	DBG("%s\n", "sorry, not implemented yet");
-	return RS232_ERR_UNKNOWN;
+	*read_len = 0;
+	while(*read_len < buf_len){
+		monotonic_diff_t elapsed = GetMonotonicDelta(started, GetMonotonicTime());
+		unsigned int ret, readed = 0;
+		if(elapsed >= timeout){
+			return RS232_ERR_TIMEOUT;
+		}
+
+		ret = rs232_read_timeout(p, &buf[*read_len], buf_len - *read_len, &readed, timeout - elapsed);
+		if(ret == RS232_ERR_NOERROR){
+			*read_len += readed;
+		}
+		else if(ret != RS232_ERR_TIMEOUT){
+			return ret;
+		}
+	}
+
+	return RS232_ERR_NOERROR;
 }
 
 RS232_LIB unsigned int
