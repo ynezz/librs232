@@ -200,8 +200,10 @@ function Port:set(port_opt)
 end
 
 function Port:read(...)
-  local ok, data, len = F(self._p:read(...))
-  if not ok then return nil, data end
+  local e, data, len = self._p:read(...)
+  if (e ~= rs232.RS232_ERR_NOERROR) and (e ~= rs232.RS232_ERR_TIMEOUT) then
+    return nil, RS232Error.new(e)
+  end
 
   if len == 0 then data = data or '' end
 
