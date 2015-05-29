@@ -1,6 +1,6 @@
 language: c
 
-sudo: false
+sudo: required
 
 env:
   global:
@@ -13,18 +13,23 @@ env:
     # - LUA=luajit2.0  # current head of 2.0 branch
     # - LUA=luajit2.1  # current head of 2.1 branch
 
-branches:
-  only:
-    - master
+# branches:
+#   only:
+#     - master
 
 before_install:
+  - sudo apt-get install socat
   - source .travis/setenv_lua.sh
+  - bash .travis/setup_uv.sh
+  - luarocks install lluv --server=http://rocks.moonscript.org/dev UV_DIR=$TRAVIS_BUILD_DIR/libuv
 
 install:
   - luarocks make rockspecs/rs232-scm-0.rockspec
 
 script:
+  - cd $TRAVIS_BUILD_DIR/bindings/lua/test
   - lua -lrs232 -v
+  - lua test_socat.lua
 
 notifications:
   email:

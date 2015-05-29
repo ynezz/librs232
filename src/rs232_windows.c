@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 #ifndef UNDER_CE
 #include <errno.h>
@@ -39,14 +40,21 @@ typedef DWORD monotonic_time_t;
 typedef DWORD monotonic_diff_t;
 
 static monotonic_time_t GetMonotonicTime(){
-	return GetTickCount();
+  return GetTickCount();
 }
 
 static monotonic_diff_t GetMonotonicDelta(monotonic_time_t StartTime, monotonic_time_t EndTime){
-	if(StartTime > EndTime)
-		return (MAXDWORD - StartTime) + EndTime;
-	return EndTime - StartTime;
+  if(StartTime > EndTime)
+    return (MAXDWORD - StartTime) + EndTime;
+  return EndTime - StartTime;
 }
+
+#define READ_EVENTS     (EV_RXCHAR | EV_ERR | EV_BREAK)
+#define READ_LATENTENCY 500
+#define R_BUFFER_SIZE   1024
+#define W_BUFFER_SIZE   1024
+
+#define USE_OVERLAPPED
 
 static wchar_t *
 a2w(const char *astr)
@@ -121,10 +129,10 @@ rs232_init(void)
 	p->rts = RS232_RTS_OFF;
 
 	wx = (struct rs232_windows_t *) p->pt;
-	wx->r_timeout = 500;
-	wx->w_timeout = 500;
-	wx->r_buffer = 1024;
-	wx->w_buffer = 1024;
+	wx->r_timeout = READ_LATENTENCY;
+	wx->w_timeout = READ_LATENTENCY;
+	wx->r_buffer = R_BUFFER_SIZE;
+	wx->w_buffer = W_BUFFER_SIZE;
 
 	return p;
 }
@@ -248,8 +256,10 @@ rs232_in_queue_clear(struct rs232_port_t *p)
 	return;
 }
 
-RS232_LIB unsigned int
-rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
+//{ Non overlapped IO
+
+static unsigned int
+rs232_read_impl(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
 	unsigned int *read_len)
 {
 	DWORD r = 0;
@@ -275,8 +285,8 @@ rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
 
 /* this function waits either for timeout or buf_len bytes,
    whatever happens first and doesn't return earlier */
-RS232_LIB unsigned int
-rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
+static unsigned int
+rs232_read_timeout_forced_impl(struct rs232_port_t *p, unsigned char *buf,
 		   unsigned int buf_len, unsigned int *read_len,
 		   unsigned int timeout)
 {
@@ -302,8 +312,8 @@ rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
 	return RS232_ERR_NOERROR;
 }
 
-RS232_LIB unsigned int
-rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
+static unsigned int
+rs232_read_timeout_impl(struct rs232_port_t *p, unsigned char *buf,
 		   unsigned int buf_len, unsigned int *read_len,
 		   unsigned int timeout)
 {
@@ -340,8 +350,8 @@ rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
 	return *read_len == 0 ? RS232_ERR_TIMEOUT : RS232_ERR_NOERROR;
 }
 
-RS232_LIB unsigned int
-rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len,
+static unsigned int
+rs232_write_impl(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len,
 		unsigned int *write_len)
 {
 	DWORD w = 0;
@@ -368,8 +378,8 @@ rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_l
 	return RS232_ERR_NOERROR;
 }
 
-RS232_LIB unsigned int
-rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
+static unsigned int
+rs232_write_timeout_impl(struct rs232_port_t *p, const unsigned char *buf,
 			unsigned int buf_len, unsigned int *write_len,
 			unsigned int timeout)
 {
@@ -400,6 +410,350 @@ rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
 
 	return RS232_ERR_NOERROR;
 }
+
+//}
+
+//{ Overlapped IO
+
+static unsigned int
+poll_ovl(struct rs232_port_t *p, unsigned int timeout, DWORD events, DWORD *mask){
+	struct rs232_windows_t *wx = p->pt;
+	DWORD ret;
+	monotonic_time_t started = GetMonotonicTime();
+
+	if(!SetCommMask(wx->fd, events)){
+		return RS232_ERR_IOCTL;
+	}
+
+  *mask = 0;
+
+	while(1){
+		monotonic_diff_t elapsed = GetMonotonicDelta(started, GetMonotonicTime());
+		if(elapsed >= timeout){
+			return RS232_ERR_TIMEOUT;
+		}
+
+		if(!wx->wait_progress){
+      wx->wait_mask = 0;
+			if(WaitCommEvent(wx->fd, &wx->wait_mask, &wx->oWait)){
+				goto readed;
+			}
+
+			if (GetLastError() != ERROR_IO_PENDING){
+			  return RS232_ERR_IOCTL;
+			}
+		}
+
+		wx->wait_progress = 1;
+
+		ret = WaitForSingleObject(wx->oWait.hEvent, timeout - elapsed);
+		if(ret != WAIT_OBJECT_0){
+			return RS232_ERR_TIMEOUT;
+		}
+
+		if(!GetOverlappedResult(wx->fd, &wx->oWait, &ret, FALSE)){
+			return RS232_ERR_IOCTL;
+		}
+
+readed:
+
+		wx->wait_progress = 0;
+
+		if(wx->wait_mask) break;
+	}
+  *mask = wx->wait_mask;
+	return RS232_ERR_NOERROR;
+}
+
+static unsigned int
+read_n_ovl(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
+		DWORD *read_len, DWORD *ermask
+)
+{
+	/* read avaliable data without waiting */
+	struct rs232_windows_t *wx = p->pt;
+	OVERLAPPED ovl = {0};
+	COMSTAT cs = {0};
+	DWORD avaliable;
+  DWORD readed;
+
+	*read_len = 0;
+
+	if (!ClearCommError(wx->fd, ermask, &cs)) {
+		return RS232_ERR_IOCTL;
+	}
+
+	avaliable = cs.cbInQue > buf_len ? buf_len : cs.cbInQue;
+	if (avaliable) {
+		if (!ReadFile(wx->fd, buf, avaliable, &readed, &ovl)) {
+			if (GetLastError() != ERROR_IO_PENDING) {
+				return RS232_ERR_READ;
+			}
+
+			if(!GetOverlappedResult(wx->fd, &ovl, &readed, TRUE)){
+				return RS232_ERR_READ;
+			}
+		}
+    *read_len = readed;
+	}
+
+	return RS232_ERR_NOERROR;
+}
+
+static unsigned int
+rs232_read_ovl(struct rs232_port_t *p, unsigned char *buf,
+		unsigned int buf_len, unsigned int *read_len,
+		unsigned int timeout, unsigned int lat,
+		DWORD events, unsigned int *ermask, unsigned int *evmask
+)
+{
+	struct rs232_windows_t *wx = p->pt;
+	monotonic_time_t started = GetMonotonicTime();
+  unsigned char *ptr = buf;
+
+	*read_len = 0;
+
+	while (1) {
+		DWORD readed, error_mask, event_mask;
+		unsigned int ret;
+		monotonic_diff_t elapsed = GetMonotonicDelta(started, GetMonotonicTime());
+
+		if (elapsed > timeout) {
+			return *read_len ? RS232_ERR_NOERROR : RS232_ERR_TIMEOUT;
+		}
+
+		ret = read_n_ovl(p, ptr, buf_len - *read_len, &readed, &error_mask);
+
+		if(ret != RS232_ERR_NOERROR){
+			return *read_len ? RS232_ERR_NOERROR : RS232_ERR_TIMEOUT;
+		}
+
+		if(ermask) *ermask = error_mask;
+
+		//! @todo check line error (e.g. parity / overflow)
+
+		if(readed){/* reduce timeout to max latentency*/
+			if((timeout - elapsed) > lat){
+				timeout = elapsed + lat;
+			}
+		}
+
+		if(!readed){
+			ret = poll_ovl(p, timeout - elapsed, events, &event_mask);
+
+			if(evmask) *evmask = event_mask;
+
+			if(ret != RS232_ERR_NOERROR){
+				return *read_len ? RS232_ERR_NOERROR : RS232_ERR_TIMEOUT;
+			}
+
+			//! @todo check event_mask (e.g. (event_mask & EV_BREAK) || (event_mask & EV_ERR))
+
+			continue;
+		}
+
+		ptr += readed;
+		*read_len += readed;
+
+		assert(*read_len <= buf_len);
+
+		if(*read_len == buf_len){
+			break;
+		}
+	}
+
+	return RS232_ERR_NOERROR;
+}
+
+static unsigned int
+rs232_read_ovl_impl(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
+	unsigned int *read_len)
+{
+	struct rs232_windows_t *wx = p->pt;
+
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
+	return rs232_read_ovl(p, buf, buf_len, read_len, wx->r_timeout, READ_LATENTENCY, READ_EVENTS, NULL, NULL);
+}
+
+/* this function waits either for timeout or buf_len bytes,
+   whatever happens first and doesn't return earlier */
+static unsigned int
+rs232_read_timeout_forced_ovl_impl(struct rs232_port_t *p, unsigned char *buf,
+		   unsigned int buf_len, unsigned int *read_len,
+		   unsigned int timeout)
+{
+	struct rs232_windows_t *wx = p->pt;
+
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
+	return rs232_read_ovl(p, buf, buf_len, read_len, timeout, timeout, READ_EVENTS, NULL, NULL);
+}
+
+static unsigned int
+rs232_read_timeout_ovl_impl(struct rs232_port_t *p, unsigned char *buf,
+		   unsigned int buf_len, unsigned int *read_len,
+		   unsigned int timeout)
+{
+	struct rs232_windows_t *wx = p->pt;
+
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
+	return rs232_read_ovl(p, buf, buf_len, read_len, timeout, READ_LATENTENCY, READ_EVENTS, NULL, NULL);
+}
+
+static unsigned int
+rs232_write_ovl(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len,
+		unsigned int *write_len)
+{
+	OVERLAPPED oWrite = {0};
+	DWORD w = 0;
+	struct rs232_windows_t *wx = p->pt;
+
+	*write_len = 0;
+
+	if(!WriteFile(wx->fd, buf, buf_len, &w, &oWrite)){
+		DWORD ret;
+		if(GetLastError() != ERROR_IO_PENDING){
+			DBG("WriteFile() %s\n", last_error());
+			return RS232_ERR_WRITE;
+		}
+		if(!GetOverlappedResult(wx->fd, &oWrite, &ret, TRUE)){
+			DBG("OverlappedResult() %s\n", last_error());
+			// wtf? How cancel current write operation?
+			return RS232_ERR_WRITE;
+		}
+	}
+
+	*write_len = w;
+	return RS232_ERR_NOERROR;
+}
+
+static unsigned int
+rs232_write_ovl_impl(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len,
+		unsigned int *write_len)
+{
+	struct rs232_windows_t *wx = p->pt;
+  unsigned int ret;
+
+	DBG("p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
+
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
+	ret = rs232_write_ovl(p, buf, buf_len, write_len);
+	if (ret != RS232_ERR_NOERROR) {
+		return ret;
+	}
+
+	if (buf_len != *write_len)
+		DBG("WriteFile() %s\n", last_error());
+
+	DBG("write_len=%d hex='%s' ascii='%s'\n", *write_len, rs232_hex_dump(buf, w),
+	    rs232_ascii_dump(buf, w));
+
+	return RS232_ERR_NOERROR;
+}
+
+static unsigned int
+rs232_write_timeout_ovl_impl(struct rs232_port_t *p, const unsigned char *buf,
+			unsigned int buf_len, unsigned int *write_len,
+			unsigned int timeout)
+{
+	struct rs232_windows_t *wx = p->pt;
+	unsigned int wt = wx->w_timeout;
+	unsigned int ret;
+
+	DBG("p=%p p->pt=%p buf_len:%d\n", (void *)p, p->pt, buf_len);
+
+	if (!rs232_port_open(p))
+		return RS232_ERR_PORT_CLOSED;
+
+	if (port_timeout(p, wx->r_timeout, timeout))
+		return RS232_ERR_UNKNOWN;
+
+	ret = rs232_write_ovl(p, buf, buf_len, write_len);
+	if (ret != RS232_ERR_NOERROR) {
+		return ret;
+	}
+
+	if (port_timeout(p, wx->r_timeout, wt))
+		return RS232_ERR_UNKNOWN;
+
+	DBG("write_len=%d hex='%s' ascii='%s'\n", *write_len, rs232_hex_dump(buf, w),
+	    rs232_ascii_dump(buf, w));
+
+	return RS232_ERR_NOERROR;
+}
+
+//}
+
+//{ Public API IP
+
+RS232_LIB unsigned int
+rs232_read(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len,
+	unsigned int *read_len)
+{
+#ifdef USE_OVERLAPPED
+	return rs232_read_ovl_impl(p, buf, buf_len, read_len);
+#else
+	return rs232_read_impl(p, buf, buf_len, read_len);
+#endif
+}
+
+/* this function waits either for timeout or buf_len bytes,
+   whatever happens first and doesn't return earlier */
+RS232_LIB unsigned int
+rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf,
+		   unsigned int buf_len, unsigned int *read_len,
+		   unsigned int timeout)
+{
+#ifdef USE_OVERLAPPED
+	return rs232_read_timeout_forced_ovl_impl(p, buf, buf_len, read_len, timeout);
+#else
+	return rs232_read_timeout_forced_impl(p, buf, buf_len, read_len, timeout);
+#endif
+}
+
+RS232_LIB unsigned int
+rs232_read_timeout(struct rs232_port_t *p, unsigned char *buf,
+		   unsigned int buf_len, unsigned int *read_len,
+		   unsigned int timeout)
+{
+#ifdef USE_OVERLAPPED
+	return rs232_read_timeout_ovl_impl(p, buf, buf_len, read_len, timeout);
+#else
+	return rs232_read_timeout_impl(p, buf, buf_len, read_len, timeout);
+#endif
+}
+
+RS232_LIB unsigned int
+rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len,
+		unsigned int *write_len)
+{
+#ifdef USE_OVERLAPPED
+	return rs232_write_ovl_impl(p, buf, buf_len, write_len);
+#else
+	return rs232_write_impl(p, buf, buf_len, write_len);
+#endif
+}
+
+RS232_LIB unsigned int
+rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf,
+			unsigned int buf_len, unsigned int *write_len,
+			unsigned int timeout)
+{
+#ifdef USE_OVERLAPPED
+	return rs232_write_timeout_ovl_impl(p, buf, buf_len, write_len, timeout);
+#else
+	return rs232_write_timeout_impl(p, buf, buf_len, write_len, timeout);
+#endif
+}
+
+//}
 
 static char *
 fix_device_name(char *device, char *ret)
@@ -436,7 +790,13 @@ rs232_open(struct rs232_port_t *p)
 		return RS232_ERR_UNKNOWN;
 
 	wx->fd = CreateFileW(wname, GENERIC_READ | GENERIC_WRITE,
-			0, NULL, OPEN_EXISTING, 0, NULL);
+			0, NULL, OPEN_EXISTING,
+#ifdef USE_OVERLAPPED
+			FILE_FLAG_OVERLAPPED,
+#else
+			0,
+#endif
+			NULL);
 
 	if (wname)
 		free(wname);
@@ -445,6 +805,17 @@ rs232_open(struct rs232_port_t *p)
 		DBG("CreateFile() %s\n", last_error());
 		return RS232_ERR_OPEN;
 	}
+
+#ifdef USE_OVERLAPPED
+	memset(&wx->oWait, 0, sizeof(wx->oWait));
+	wx->oWait.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if(wx->oWait.hEvent == NULL){
+		CloseHandle(wx->fd);
+		wx->fd = INVALID_HANDLE_VALUE;
+		return RS232_ERR_OPEN;
+	}
+	wx->wait_progress = 0;
+#endif
 
 	p->status = RS232_PORT_OPEN;
 	rs232_flush(p);
@@ -770,9 +1141,17 @@ rs232_close(struct rs232_port_t *p)
 
 	ret = CloseHandle(wx->fd);
 	if (ret == 0) {
-		DBG("PurgeComm() %s\n", last_error());
+		DBG("CloseHandle() %s\n", last_error());
 		return RS232_ERR_CLOSE;
 	}
+
+#ifdef USE_OVERLAPPED
+	ret = CloseHandle(wx->oWait.hEvent);
+	if (ret == 0) {
+		DBG("CloseHandle() %s\n", last_error());
+		 return RS232_ERR_CLOSE;
+	}
+#endif
 
 	return RS232_ERR_NOERROR;
 }
