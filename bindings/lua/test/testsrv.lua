@@ -1,3 +1,6 @@
+control_port = arg[1] or CONTROL_PORT or 'COM4'
+data_port    = arg[2] or DATA_PORT or '\\\\.\\CNCA0'
+
 local function split_first(str, sep, plain)
   local e, e2 = string.find(str, sep, nil, plain)
   if e then
@@ -21,7 +24,8 @@ local function open_port(name)
   assert(p:set_parity(rs232.RS232_PARITY_NONE)    == rs232.RS232_ERR_NOERROR)
   assert(p:set_stop_bits(rs232.RS232_STOP_1)      == rs232.RS232_ERR_NOERROR)
   assert(p:set_flow_control(rs232.RS232_FLOW_OFF) == rs232.RS232_ERR_NOERROR)
-  assert(p:set_rts(rs232.RS232_RTS_ON)            == rs232.RS232_ERR_NOERROR)
+  -- assert(p:set_rts(rs232.RS232_RTS_ON)            == rs232.RS232_ERR_NOERROR)
+  print("SET RTS", p:set_rts(rs232.RS232_RTS_ON))
 
   print(string.format("OK, port open with values '%s'", tostring(p)))
   return p
@@ -57,4 +61,4 @@ local function run_test_server(control_port, data_port)
   data:close()
 end
 
-run_test_server('COM4', '\\\\.\\CNCA0')
+run_test_server(control_port, data_port)

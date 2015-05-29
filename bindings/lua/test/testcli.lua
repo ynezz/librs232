@@ -1,4 +1,5 @@
-control_port, data_port = 'COM5', '\\\\.\\CNCB0'
+control_port = arg[1] or CONTROL_PORT or 'COM5'
+data_port    = arg[2] or DATA_PORT or '\\\\.\\CNCB0'
 
 rs232  = require "luars232"
 out    = io.stderr
@@ -29,7 +30,8 @@ local function open_port(name)
   assert(p:set_parity(rs232.RS232_PARITY_NONE)    == rs232.RS232_ERR_NOERROR)
   assert(p:set_stop_bits(rs232.RS232_STOP_1)      == rs232.RS232_ERR_NOERROR)
   assert(p:set_flow_control(rs232.RS232_FLOW_OFF) == rs232.RS232_ERR_NOERROR)
-  assert(p:set_rts(rs232.RS232_RTS_ON)            == rs232.RS232_ERR_NOERROR)
+  -- assert(p:set_rts(rs232.RS232_RTS_ON)            == rs232.RS232_ERR_NOERROR)
+  print("SET RTS", p:set_rts(rs232.RS232_RTS_ON))
 
   out:write(string.format("OK, port open with values '%s'\n", tostring(p)))
   return p
@@ -80,10 +82,16 @@ end
 function reconnect()
   remote[[
     data:in_queue_clear()
-    while data:read(1024) == rs232.RS232_ERR_NOERROR do end
+    while true do e, d = data:read(1024, 100)
+      if e ~= rs232.RS232_ERR_NOERROR then break end
+      if not d or #d == 0 then break end
+    end
   ]]
   data:in_queue_clear()
-  while data:read(1024) == rs232.RS232_ERR_NOERROR do end
+  while true do e, d = data:read(1024, 100)
+    if e ~= rs232.RS232_ERR_NOERROR then break end
+    if not d or #d == 0 then break end
+  end
 end
 
 control = open_port(control_port)

@@ -21,11 +21,11 @@ before_install:
   - sudo apt-get install socat
   - source .travis/setenv_lua.sh
   - bash .travis/setup_uv.sh
-  - luarocks install lzmq-timer
-  - luarocks install lluv --server=http://rocks.moonscript.org/dev UV_DIR=$TRAVIS_BUILD_DIR/libuv
+  - luarocks install https://raw.githubusercontent.com/zeromq/lzmq/master/rockspecs/lzmq-timer-0.4.2-1.rockspec
+  - luarocks install https://raw.githubusercontent.com/moteus/lua-lluv/master/rockspecs/lluv-scm-0.rockspec UV_DIR=$TRAVIS_BUILD_DIR/libuv
 
 install:
-  # - luarocks make rockspecs/rs232-scm-0.rockspec
+  - luarocks make rockspecs/rs232-scm-0.rockspec
 
 script:
   - cd $TRAVIS_BUILD_DIR/bindings/lua/test

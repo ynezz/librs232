@@ -87,7 +87,9 @@ lua -v
 
 LUAROCKS_BASE=luarocks-$LUAROCKS
 
-curl --location http://luarocks.org/releases/$LUAROCKS_BASE.tar.gz | tar xz
+# curl --location http://luarocks.org/releases/$LUAROCKS_BASE.tar.gz | tar xz
+
+curl --location https://github.com/keplerproject/luarocks/archive/v$LUAROCKS.tar.gz | tar xz
 
 cd $LUAROCKS_BASE
 
