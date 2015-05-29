@@ -1,6 +1,16 @@
 local uv = require "lluv"
 local ut = require "lluv.utils"
 
+local function escape(str)
+  return (str
+    :gsub("\r", "\\r")
+    :gsub("\n", "\\n")
+    :gsub("\t", "\\t")
+    :gsub("[%z\001-\031\127-\255]", function(ch)
+      return string.format("\\%.3d", string.byte(ch))
+    end))
+end
+
 local function spawn(file, args, line_cb)
   local stdout_buffer = ut.Buffer.new()
   local stderr_buffer = ut.Buffer.new()
@@ -25,6 +35,8 @@ local function spawn(file, args, line_cb)
   end)
 
   stdout:start_read(function(self, err, data)
+    print("STD>", err, escape(data or ''))
+
     if err then
       print(err)
       return uv.stop()
@@ -39,7 +51,19 @@ local function spawn(file, args, line_cb)
   end)
 
   stderr:start_read(function(self, err, data)
-    if not err then stderr_buffer:append(data) end
+    print("ERR>", err, escape(data or ''))
+
+    if err then
+      print(err)
+      return uv.stop()
+    end
+
+    stderr_buffer:append(data)
+    while true do
+      local line = stderr_buffer:read_line()
+      if not line then break end
+      if line_cb(line) then uv.stop() end
+    end
   end)
 
   uv.run()

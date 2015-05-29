@@ -7,8 +7,8 @@ env:
     - LUAROCKS=2.2.2
   matrix:
     - LUA=lua5.1
-    - LUA=lua5.2
-    - LUA=lua5.3
+    # - LUA=lua5.2
+    # - LUA=lua5.3
     # - LUA=luajit     # latest stable version (2.0.4)
     # - LUA=luajit2.0  # current head of 2.0 branch
     # - LUA=luajit2.1  # current head of 2.1 branch
@@ -21,14 +21,16 @@ before_install:
   - sudo apt-get install socat
   - source .travis/setenv_lua.sh
   - bash .travis/setup_uv.sh
+  - luarocks install lzmq-timer
   - luarocks install lluv --server=http://rocks.moonscript.org/dev UV_DIR=$TRAVIS_BUILD_DIR/libuv
 
 install:
-  - luarocks make rockspecs/rs232-scm-0.rockspec
+  # - luarocks make rockspecs/rs232-scm-0.rockspec
 
 script:
   - cd $TRAVIS_BUILD_DIR/bindings/lua/test
-  - lua -lrs232 -v
+  # - lua -lrs232 -v
+  # - socat -d -d PTY PTY
   - lua test_socat.lua
 
 notifications:
