@@ -759,21 +759,24 @@ static char *
 fix_device_name(char *device, char *ret)
 {
 	char *s = device;
+	/* meh, Windows CE is special and can't handle URN path, just COM1: format */
 
-	while (*s && !isdigit(*s))
-		s++;
-
-	if (s && (atoi(s) > 0)) {
-		/* meh, Windows CE is special and can't handle URN path, just COM1: format */
-#ifndef UNDER_CE
-		snprintf(ret, RS232_STRLEN_DEVICE, "\\\\.\\COM%s", s);
+	if((s[0] == '\\')&&(s[1] == '\\')&&(s[2] == '.')&&(s[3] == '\\')){
+#ifdef UNDER_CE
+	/* remove URN prefix */
+	snprintf(ret, RS232_STRLEN_DEVICE, "%s", s + 4);
+	return ret;
 #else
-		snprintf(ret, RS232_STRLEN_DEVICE, "COM%s:", s);
+	return s;
 #endif
-		return ret;
 	}
 
-	return device;
+#ifdef UNDER_CE
+	return s;
+#else
+	snprintf(ret, RS232_STRLEN_DEVICE, "\\\\.\\%s", s);
+	return ret;
+#endif
 }
 
 RS232_LIB unsigned int

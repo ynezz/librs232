@@ -253,8 +253,9 @@ local function test_queue_in(len)
   s = string.rep('a', len)
 
   remote([[
-    data:write('%s')
-  ]], s)
+    s = ('a'):rep(%d)
+    data:write(s)
+  ]], len)
 
   ztimer.sleep(2000)
 
