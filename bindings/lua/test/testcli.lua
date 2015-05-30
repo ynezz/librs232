@@ -242,10 +242,45 @@ local function test_read_some(len, tm, sl)
 
 end
 
+local function test_queue_in(len)
+  reconnect()
+  printf("%d bytes: ", len)
+
+  e, l = data:in_queue()
+  if e ~= rs232.RS232_ERR_NOERROR then fail(rs232.error_tostring(e)) end
+  if l ~= 0 then fail('should be emty') end
+
+  s = string.rep('a', len)
+
+  remote([[
+    data:write('%s')
+  ]], s)
+
+  ztimer.sleep(2000)
+
+  e, l = data:in_queue()
+  if e ~= rs232.RS232_ERR_NOERROR then fail(rs232.error_tostring(e)) end
+  if l ~= len then fail('expected %d but got %d', len, l) end
+
+  e = data:in_queue_clear()
+  if e ~= rs232.RS232_ERR_NOERROR then fail('clear fail %s', rs232.error_tostring(e)) end
+
+  e, l = data:in_queue()
+  if e ~= rs232.RS232_ERR_NOERROR then fail(rs232.error_tostring(e)) end
+  if l ~= 0 then warn('clear fail %d', l)
+  else pass('ok') end
+end
+
+
 test"echo"
 test_echo(128)
 test_echo(256)
 test_echo(1024)
+
+test"input queue"
+test_queue_in(16)
+test_queue_in(128)
+test_queue_in(256)
 
 test"read timeout forced"
 test_read_timeout_forced('1024', 2000, 3000)
