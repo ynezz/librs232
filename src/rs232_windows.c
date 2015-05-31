@@ -129,7 +129,7 @@ rs232_init(void)
 	p->rts = RS232_RTS_OFF;
 
 	wx = (struct rs232_windows_t *) p->pt;
-	wx->r_timeout = READ_LATENTENCY;
+  wx->r_timeout = READ_LATENTENCY;
 	wx->w_timeout = READ_LATENTENCY;
 	wx->r_buffer = R_BUFFER_SIZE;
 	wx->w_buffer = W_BUFFER_SIZE;
@@ -574,7 +574,7 @@ rs232_read_ovl_impl(struct rs232_port_t *p, unsigned char *buf, unsigned int buf
 	if (!rs232_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	return rs232_read_ovl(p, buf, buf_len, read_len, wx->r_timeout, READ_LATENTENCY, READ_EVENTS, NULL, NULL);
+	return rs232_read_ovl(p, buf, buf_len, read_len, INFINITE, READ_LATENTENCY, READ_EVENTS, NULL, NULL);
 }
 
 /* this function waits either for timeout or buf_len bytes,

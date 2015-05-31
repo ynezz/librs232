@@ -52,7 +52,7 @@ function fail(...)
   io.stderr:write("ERROR: ")
   printf(...)
   io.stderr:write("!\n")
-  os.exit()
+  os.exit(-1)
 end
 
 function warn(...)
@@ -242,6 +242,34 @@ local function test_read_some(len, tm, sl)
 
 end
 
+local function test_read_all(len, sl)
+  reconnect()
+
+  printf("%d bytes, %dms pause: ", len, sl)
+
+  remote(string.format ([[
+      str = string.rep('a', %d)
+      print('server: sleeping for %dms')
+      ztimer.sleep(%d)
+      data:write(str)
+      print('server: sleeping for %dms')
+      ztimer.sleep(%d)
+      print('server: woke up')
+      data:write(str)
+  ]], len, sl, sl, sl, sl))
+
+  monotonic:start()
+
+  e, d = data:read(len * 2)
+
+  elapsed = monotonic:stop()
+
+  if e ~= rs232.RS232_ERR_NOERROR then fail(rs232.error_tostring(e)) end
+  if #d ~= len then fail("not enouth data %d", #d) end
+
+  pass('ok')
+end
+
 local function test_queue_in(len)
   reconnect()
   printf("%d bytes: ", len)
@@ -282,14 +310,23 @@ test"input queue"
 test_queue_in(16)
 test_queue_in(128)
 test_queue_in(256)
+test_queue_in(1024)
 
 test"read timeout forced"
-test_read_timeout_forced('1024', 2000, 3000)
-test_read_timeout_forced('1024', 3000, 2000)
+test_read_timeout_forced(1024, 2000, 3000)
+test_read_timeout_forced(1024, 3000, 2000)
+test_read_timeout_forced(2048, 2000, 3000)
+test_read_timeout_forced(2048, 3000, 2000)
 
 test"read some"
-test_read_some('10', 2000, 3000)
-test_read_some('10', 3000, 2000)
+test_read_some(1024, 2000, 3000)
+test_read_some(1024, 3000, 2000)
+
+test"read all"
+test_read_all(64, 2000)
+test_read_all(128, 2000)
+test_read_all(512, 2000)
+test_read_all(1024, 2000)
 
 test("shutting server down")
 reconnect()

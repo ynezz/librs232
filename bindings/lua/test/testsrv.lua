@@ -41,7 +41,7 @@ local function run_test_server(control_port, data_port)
   local sep, buffer = '\255'
 
   while true do
-    local e, d, s = control:read(100)
+    local e, d, s = control:read(100, 100)
     if e ~= rs232.RS232_ERR_TIMEOUT then
       assert(e == rs232.RS232_ERR_NOERROR)
       buffer = (buffer or '') .. (d or '')
