@@ -30,7 +30,7 @@
 #include <time.h>
 
 #define RS232_STRLEN 512
-#define RS232_STRLEN_DEVICE 30
+#define RS232_STRLEN_DEVICE 256
 
 #ifdef __linux__
 #define RS232_PORT_POSIX "/dev/ttyS0"

@@ -1,30 +1,36 @@
 language: c
 
-sudo: false
+sudo: required
 
 env:
   global:
     - LUAROCKS=2.2.2
   matrix:
     - LUA=lua5.1
-    - LUA=lua5.2
-    - LUA=lua5.3
+    # - LUA=lua5.2
+    # - LUA=lua5.3
     # - LUA=luajit     # latest stable version (2.0.4)
     # - LUA=luajit2.0  # current head of 2.0 branch
     # - LUA=luajit2.1  # current head of 2.1 branch
 
-branches:
-  only:
-    - master
+# branches:
+#   only:
+#     - master
 
 before_install:
+  - sudo apt-get install socat
   - source .travis/setenv_lua.sh
+  - bash .travis/setup_uv.sh
+  - luarocks install https://raw.githubusercontent.com/zeromq/lzmq/master/rockspecs/lzmq-timer-0.4.2-1.rockspec
+  - luarocks install https://raw.githubusercontent.com/moteus/lua-lluv/master/rockspecs/lluv-scm-0.rockspec UV_DIR=$TRAVIS_BUILD_DIR/libuv
 
 install:
   - luarocks make rockspecs/rs232-scm-0.rockspec
 
 script:
+  - cd $TRAVIS_BUILD_DIR/bindings/lua/test
   - lua -lrs232 -v
+  - lua test_socat.lua
 
 notifications:
   email:
