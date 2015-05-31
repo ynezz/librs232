@@ -46,6 +46,8 @@ before_test:
 
 test_script:
   - echo "Testing..."
+  - cd bindings\lua\test
+  - lua testcli.lua
 
 after_test:
   # - cd %APPVEYOR_BUILD_FOLDER%
