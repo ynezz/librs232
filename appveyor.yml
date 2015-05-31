@@ -22,9 +22,10 @@ platform:
 
 cache:
   - c:\lua -> appveyor.yml
+  - c:\com0com
   - c:\external -> appveyor.yml
-  - C:\Program Files (x86)\LuaRocks -> appveyor.yml
   - C:\Program Files\LuaRocks -> appveyor.yml
+  - C:\Program Files (x86)\LuaRocks -> appveyor.yml
 
 init:
   - call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %platform%
@@ -47,7 +48,7 @@ before_test:
 test_script:
   - echo "Testing..."
   - cd bindings\lua\test
-  - lua testcli.lua
+  - call test_app.bat
 
 after_test:
   # - cd %APPVEYOR_BUILD_FOLDER%
