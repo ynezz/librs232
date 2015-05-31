@@ -17,8 +17,8 @@ environment:
     # - LJ_VER: 2.1
 
 platform:
-  # - x64
-  - x86
+  - x64
+  # - x86
 
 cache:
   - c:\lua -> appveyor.yml
