@@ -10,11 +10,16 @@ if not exist %COM0COM_ROOT%\setupc.exe (
   curl --output tt.zip --silent --fail --max-time 120 --connect-timeout 30 -L %COM0COM_URL%
   7z x -aoa tt.zip
   rm tt.zip
-  cd %COM0COM_BASE% && .\setup.exe /S %COM0COM_ROOT%
-  cd %COM0COM_ROOT%
+  echo ======================================================
+  echo Install com0com
+  echo ======================================================
+  cd %COM0COM_BASE%
+  .\setup.exe /S /D=%COM0COM_ROOT%
+  dir %COM0COM_ROOT%
   echo ======================================================
   echo install virtual serial ports
   echo ======================================================
-  ./setupc --silent --detail-prms install 0 - -
-  ./setupc --silent --detail-prms install 1 - -
+  cd %COM0COM_ROOT%
+  .\setupc.exe --silent --detail-prms install 0 - -
+  .\setupc.exe --silent --detail-prms install 1 - -
 )
