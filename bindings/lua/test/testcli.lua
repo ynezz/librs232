@@ -97,40 +97,6 @@ end
 control = open_port(control_port)
 data    = open_port(data_port)
 
-function check_timeout(tm, sl, elapsed, err, opp, mode, alldone)
-  if tm < sl then
-    if opp == "send" then
-      if not err then warn("must be buffered")
-      elseif err == "timeout" then pass("proper timeout")
-      else fail("unexpected error '%s'", err) end
-    else 
-      if err ~= "timeout" then fail("should have timed out") 
-      else pass("proper timeout") end
-    end
-  else
-    if mode == "total" then
-      if elapsed > tm then 
-        if err ~= "timeout" then fail("should have timed out")
-        else pass("proper timeout") end
-      elseif elapsed < tm then
-        if err then fail(err) 
-        else pass("ok") end
-      else 
-        if alldone then 
-          if err then fail("unexpected error '%s'", err) 
-          else pass("ok") end
-        else
-          if err ~= "timeout" then fail(err) 
-          else pass("proper timeoutk") end
-        end
-      end
-    else 
-      if err then fail(err) 
-      else pass("ok") end 
-    end
-  end
-end
-
 local function test_echo(len)
   reconnect()
   printf("%d bytes: ", len)
@@ -265,9 +231,10 @@ local function test_read_all(len, sl)
   elapsed = monotonic:stop()
 
   if e ~= rs232.RS232_ERR_NOERROR then fail(rs232.error_tostring(e)) end
-  if #d ~= len then fail("not enouth data %d", #d) end
+  if not d or #d == 0  then fail("no data")
+  elseif #d > len then warning("wait too long %d, readed %d", elapsed, #d)
+  else pass('ok') end
 
-  pass('ok')
 end
 
 local function test_queue_in(len)

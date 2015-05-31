@@ -29,8 +29,7 @@ install:
 
 script:
   - cd $TRAVIS_BUILD_DIR/bindings/lua/test
-  # - lua -lrs232 -v
-  # - socat -d -d PTY PTY
+  - lua -lrs232 -v
   - lua test_socat.lua
 
 notifications:
