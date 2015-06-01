@@ -140,6 +140,14 @@ local function test_queue_in(len)
   assert_equal(rs232.RS232_ERR_NOERROR, e, rs232.error_tostring(e))
   assert_equal(len, l)
 
+  local e, d = data:read(1, 0)
+  assert_equal(rs232.RS232_ERR_NOERROR, e, rs232.error_tostring(e))
+  assert_equal(1, #d)
+
+  e, l = data:in_queue()
+  assert_equal(rs232.RS232_ERR_NOERROR, e, rs232.error_tostring(e))
+  assert_equal(len-1, l)
+
   e = data:in_queue_clear()
   assert_equal(rs232.RS232_ERR_NOERROR, e, rs232.error_tostring(e))
 
