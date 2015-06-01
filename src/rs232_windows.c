@@ -248,7 +248,7 @@ rs232_in_queue_clear(struct rs232_port_t *p)
 	if (!rs232_port_open(p))
 		return;
 
-	if (!PurgeComm(wx->fd, PURGE_TXABORT | PURGE_TXCLEAR)) {
+	if (!PurgeComm(wx->fd, PURGE_RXABORT | PURGE_RXCLEAR)) {
 		DBG("PurgeComm() %s\n", last_error());
 		return;
 	}
@@ -405,9 +405,8 @@ poll_ovl(struct rs232_port_t *p, unsigned int timeout, DWORD events, DWORD *mask
 
 		if(!wx->wait_progress){
 			wx->wait_mask = 0;
-			if(WaitCommEvent(wx->fd, &wx->wait_mask, &wx->oWait)){
+			if (WaitCommEvent(wx->fd, &wx->wait_mask, &wx->oWait))
 				goto readed;
-			}
 
 			if (GetLastError() != ERROR_IO_PENDING)
 				return RS232_ERR_IOCTL;
