@@ -7,7 +7,6 @@ shallow_clone: true
 
 environment:
   LUAROCKS_VER: 2.2.1
-  CURL_VER: 7.41.0
 
   matrix:
     - LUA_VER: 5.1.5
@@ -36,14 +35,15 @@ install:
 
 before_build:
   # external deps
-  - call .appveyor\install_com0com.bat
 
 build_script:
   - luarocks make rockspecs/rs232-scm-0.rockspec
 
 before_test:
   # test deps
+  - call .appveyor\install_com0com.bat
   - luarocks install lzmq-timer
+  - luarocks install lunitx
 
 test_script:
   - echo "Testing..."
