@@ -1,4 +1,4 @@
-control_port = arg[1] or CONTROL_PORT or 'COM4'
+control_port = arg[1] or CONTROL_PORT or '\\\\.\\CNCA1'
 data_port    = arg[2] or DATA_PORT or '\\\\.\\CNCA0'
 
 local function split_first(str, sep, plain)
