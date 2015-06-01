@@ -3,4 +3,4 @@ echo --------------------------------------
 echo server started
 echo --------------------------------------
 sleep 60
-lua testcli.lua
+lua utestcli.lua

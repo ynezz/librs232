@@ -27,7 +27,7 @@ install = target('install', {
 
 target('test', install, function()
   if spawn(J(TESTDIR, 'testsrv.lua'), TESTDIR) then
-    run_test(TESTDIR, J(TESTDIR, 'testcli.lua'))
+    run_test(TESTDIR, J(TESTDIR, 'utestcli.lua'))
   end
 
   if not test_summary() then

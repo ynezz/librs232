@@ -105,4 +105,4 @@ spawn_lua{"testsrv.lua", control_port_1, data_port_1}
 CONTROL_PORT = control_port_2
 DATA_PORT    = data_port_2
 
-require "testcli"
+require "utestcli"
