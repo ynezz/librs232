@@ -134,13 +134,27 @@ end
 local Port = class() do
 
 function Port:__init(name, opt)
-  local ok, ret = F(rs232.open(name))
+  self._name = assert(name)
+  self._opt = {}
+  for k,v in pairs(opt or {})do
+    self._opt[k] = v
+  end
+
+  return self
+end
+
+function Port:open()
+  local ok, ret = F(rs232.open(self._name))
   if not ok then return nil, ret end
   self._p = ret
 
-  if opt then self:set(opt) end
+  ok, ret = self:set(self._opt)
+  if not ok then
+    self._p:close()
+    return nil, err
+  end
 
-  return self
+  return self, tostring(self._p)
 end
 
 function Port:close(...)

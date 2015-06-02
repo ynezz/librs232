@@ -83,7 +83,7 @@ static char * last_error(void)
 	DWORD err = 0;
 	DWORD ret = 0;
 	char errbuf[MAX_PATH+1] = {0};
-	char retbuf[MAX_PATH+1] = {0};
+	static char retbuf[MAX_PATH+1] = {0};
 
 	err = GetLastError();
 	ret = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, 0, errbuf, MAX_PATH, NULL);
@@ -1158,6 +1158,8 @@ rs232_close(struct rs232_port_t *p)
 		DBG("CloseHandle() %s\n", last_error());
 		 return RS232_ERR_CLOSE;
 	}
+
+	wx->wait_progress = 0;
 #endif
 
 	return RS232_ERR_NOERROR;

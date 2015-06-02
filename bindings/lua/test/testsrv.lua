@@ -38,6 +38,9 @@ local function run_test_server(control_port, data_port)
   control   = open_port(control_port)
   data      = open_port(data_port)
 
+  print("Server started")
+  io.flush()
+
   local sep, buffer = '\255'
 
   while true do
