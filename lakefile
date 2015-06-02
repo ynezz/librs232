@@ -30,6 +30,10 @@ target('test', install, function()
     run_test(TESTDIR, J(TESTDIR, 'utestcli.lua'))
   end
 
+  if spawn(J(TESTDIR, 'testsrv_rs232.lua'), TESTDIR) then
+    run_test(TESTDIR, J(TESTDIR, 'utestcli_rs232.lua'))
+  end
+
   if not test_summary() then
     quit("test fail")
   end

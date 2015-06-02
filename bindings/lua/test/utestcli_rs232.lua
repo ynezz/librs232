@@ -53,12 +53,12 @@ local function remote(...)
   s = s .. sep
   local n, err = control:write(s)
   assert(n, tostring(err))
-  assert(#s == n, "Got" .. tostring(n))
-  local d, e = control:read(1, 5000)
+  assert(#s == n, "Write error. Written: " .. tostring(n))
+  local d, e = control:read(1, 30000)
   assert(d, tostring(e))
   assert(not e, tostring(e))
   assert(#d == 1)
-  assert(d == sep, "Got " .. string.byte(d))
+  assert(d == sep, "Read error. Got " .. string.byte(d))
 end
 
 local function reconnect()

@@ -1,7 +1,5 @@
 package.path = "../?.lua;" .. package.path
 
-local uv    = require "lluv"
-local ut    = require "lluv.utils"
 local rs232 = require "rs232"
 
 control_port = arg[1] or CONTROL_PORT or 'CNCA1'
@@ -58,5 +56,3 @@ local function run_test_server(control_port, data_port)
 end
 
 run_test_server(control_port, data_port)
-
-uv.run()

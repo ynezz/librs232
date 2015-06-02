@@ -3,7 +3,7 @@
 :: Now we declare a scope
 Setlocal EnableDelayedExpansion EnableExtensions
 
-start lua testsrv.lua
+start cmd /c lua testsrv.lua ^> testsrv.log 2^>^&1
 echo --------------------------------------
 echo server started
 echo --------------------------------------
@@ -11,16 +11,15 @@ echo --------------------------------------
 sleep 30
 lua utestcli.lua
 
-set code=%errorlevel%
-
 echo --------------------------------------
 echo Exit %code%
 echo --------------------------------------
 
 taskkill /F /IM lua.exe
+type testsrv.log
 sleep 30
 
-start lua testsrv_rs232.lua
+start cmd /c lua testsrv_rs232.lua ^> testsrv.log 2^>^&1
 echo --------------------------------------
 echo server started
 echo --------------------------------------
@@ -35,5 +34,8 @@ if "%code%"=="0" (
 echo --------------------------------------
 echo Exit %code%
 echo --------------------------------------
+
+taskkill /F /IM lua.exe
+type testsrv.log
 
 exit /B %code%
