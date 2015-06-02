@@ -589,9 +589,10 @@ rs232_write_ovl(struct rs232_port_t *p, const unsigned char *buf, unsigned int b
 		}
 		if(!GetOverlappedResult(wx->fd, &oWrite, &ret, TRUE)){
 			DBG("OverlappedResult() %s\n", last_error());
-			// wtf? How cancel current write operation?
+			// wtf? If we get error how cancel current write operation?
 			return RS232_ERR_WRITE;
 		}
+		w = ret;
 	}
 
 	*write_len = w;
