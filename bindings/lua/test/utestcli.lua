@@ -47,7 +47,7 @@ end
 
 local control = open_port(control_port)
 local data    = open_port(data_port)
-local sep     = '\255'
+local sep     = '\n'
 
 local function printf(...)
   io.stderr:write(string.format(...))

@@ -39,7 +39,7 @@ local function open_port(name)
 end
 
 local control, data
-local sep     = '\255'
+local sep     = '\n'
 
 local function printf(...)
   io.stderr:write(string.format(...))
@@ -51,7 +51,9 @@ local function remote(...)
   s = string.gsub(s, "%s+", " ")
   s = string.gsub(s, "^%s*", "")
   s = s .. sep
-  assert(#s == control:write(s))
+  local n, err = control:write(s)
+  assert(n, tostring(err))
+  assert(#s == n, "Got" .. tostring(n))
   local d, e = control:read(1, 5000)
   assert(d, tostring(e))
   assert(not e, tostring(e))

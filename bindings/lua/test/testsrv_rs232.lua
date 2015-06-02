@@ -34,7 +34,7 @@ local function run_test_server(control_port, data_port)
   control   = open_port(control_port)
   data      = open_port(data_port)
 
-  local sep, buffer = '\255'
+  local sep, buffer = '\n'
 
   print("Server started")
   io.flush()

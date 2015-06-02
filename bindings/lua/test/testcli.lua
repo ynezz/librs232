@@ -37,7 +37,7 @@ local function open_port(name)
   return p
 end
 
-local sep = '\255'
+local sep = '\n'
 
 function printf(...)
   io.stderr:write(string.format(...))

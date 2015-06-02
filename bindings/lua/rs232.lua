@@ -123,9 +123,17 @@ end
 
 end
 
+local ERRORS = {
+  [rs232.RS232_ERR_TIMEOUT] = RS232Error.new(rs232.RS232_ERR_TIMEOUT);
+}
+
+local function Error(e)
+  return ERRORS[e] or RS232Error.new(e)
+end
+
 local function F(e, ...)
   if e ~= rs232.RS232_ERR_NOERROR then
-    return nil, RS232Error.new(e)
+    return nil, Error(e)
   end
 
   return true, ...
@@ -215,11 +223,13 @@ end
 
 function Port:read(...)
   local e, data, len = self._p:read(...)
-  if (e ~= rs232.RS232_ERR_NOERROR) and (e ~= rs232.RS232_ERR_TIMEOUT) then
-    return nil, RS232Error.new(e)
-  end
 
-  if len == 0 then data = data or '' end
+  if e ~= rs232.RS232_ERR_NOERROR then
+    if e == rs232.RS232_ERR_TIMEOUT then
+      return data or ''
+    end
+    return data, Error(e)
+  end
 
   return data
 end

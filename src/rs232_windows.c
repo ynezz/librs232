@@ -462,7 +462,7 @@ static unsigned int
 rs232_read_ovl(struct rs232_port_t *p, unsigned char *buf,
 		unsigned int buf_len, unsigned int *read_len,
 		unsigned int timeout, unsigned int lat,
-		DWORD events, unsigned int *ermask, unsigned int *evmask
+		DWORD events, unsigned int *evmask
 )
 {
 	struct rs232_windows_t *wx = p->pt;
@@ -481,12 +481,25 @@ rs232_read_ovl(struct rs232_port_t *p, unsigned char *buf,
 
 		ret = read_n_ovl(p, ptr, buf_len - *read_len, &readed, &error_mask);
 
+		if (error_mask) {
+			if (error_mask & CE_BREAK)
+				ret = RS232_ERR_BREAK;
+
+			if (error_mask & CE_RXOVER)
+				ret = RS232_ERR_RXOVERFLOW;
+
+			if (error_mask & CE_OVERRUN)
+				ret = RS232_ERR_OVERRUN;
+
+			if (error_mask & CE_FRAME)
+				ret = RS232_ERR_FRAME;
+
+			if (error_mask & CE_RXPARITY)
+				ret = RS232_ERR_PARITY;
+		}
+
 		if (ret != RS232_ERR_NOERROR)
-			return *read_len ? RS232_ERR_NOERROR : RS232_ERR_TIMEOUT;
-
-		if(ermask) *ermask = error_mask;
-
-		//! @todo check line error (e.g. parity / overflow)
+			return ret;
 
 		if(readed){/* reduce timeout to max latentency*/
 			if((timeout - elapsed) > lat)
@@ -527,7 +540,7 @@ rs232_read_ovl_impl(struct rs232_port_t *p, unsigned char *buf, unsigned int buf
 	if (!rs232_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	return rs232_read_ovl(p, buf, buf_len, read_len, INFINITE, READ_LATENTENCY, READ_EVENTS, NULL, NULL);
+	return rs232_read_ovl(p, buf, buf_len, read_len, INFINITE, READ_LATENTENCY, READ_EVENTS, NULL);
 }
 
 /* this function waits either for timeout or buf_len bytes,
@@ -542,7 +555,7 @@ rs232_read_timeout_forced_ovl_impl(struct rs232_port_t *p, unsigned char *buf,
 	if (!rs232_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	return rs232_read_ovl(p, buf, buf_len, read_len, timeout, timeout, READ_EVENTS, NULL, NULL);
+	return rs232_read_ovl(p, buf, buf_len, read_len, timeout, timeout, READ_EVENTS, NULL);
 }
 
 static unsigned int
@@ -555,7 +568,7 @@ rs232_read_timeout_ovl_impl(struct rs232_port_t *p, unsigned char *buf,
 	if (!rs232_port_open(p))
 		return RS232_ERR_PORT_CLOSED;
 
-	return rs232_read_ovl(p, buf, buf_len, read_len, timeout, READ_LATENTENCY, READ_EVENTS, NULL, NULL);
+	return rs232_read_ovl(p, buf, buf_len, read_len, timeout, READ_LATENTENCY, READ_EVENTS, NULL);
 }
 
 static unsigned int

@@ -41,7 +41,7 @@ local function run_test_server(control_port, data_port)
   print("Server started")
   io.flush()
 
-  local sep, buffer = '\255'
+  local sep, buffer = '\n'
 
   while true do
     local e, d, s = control:read(100, 100)
