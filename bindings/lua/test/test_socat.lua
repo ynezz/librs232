@@ -122,7 +122,7 @@ local function run_server(...)
   print("Server:")
   local started
   local pid = spawn_lua({...}, function(line)
-    io.write(line) io.flush()
+    print(line)
     started = not not line:find('Server started')
     return started
   end)
@@ -153,7 +153,7 @@ kill(pid)
 
 zt.sleep(5000)
 
-local pid = run_server("testsrv.lua", control_port_1, data_port_1)
+local pid = run_server("testsrv_rs232.lua", control_port_1, data_port_1)
 
 local _, status2 = spawn_lua({"utestcli_rs232.lua", control_port_2, data_port_2}, {nil, function(line)
   io.write(line)

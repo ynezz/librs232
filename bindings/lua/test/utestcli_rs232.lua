@@ -1,10 +1,8 @@
 package.path = "../?.lua;" .. package.path
 
-control_port = arg[1] or CONTROL_PORT or 'CNCB1'
-data_port    = arg[2] or DATA_PORT or 'CNCB0'
+local control_port = arg[1] or CONTROL_PORT or 'CNCB1'
+local data_port    = arg[2] or DATA_PORT or 'CNCB0'
 
-local uv        = require "lluv"
-local ut        = require "lluv.utils"
 local rs232     = require "rs232"
 local ztimer    = require "lzmq.timer"
 local utils     = require "utils"
@@ -52,10 +50,13 @@ local function remote(...)
   s = string.gsub(s, "\n", ";")
   s = string.gsub(s, "%s+", " ")
   s = string.gsub(s, "^%s*", "")
-  control:write(s .. sep)
-  local d, e = control:read(1, 30000)
+  s = s .. sep
+  assert(#s == control:write(s))
+  local d, e = control:read(1, 5000)
+  assert(d, tostring(e))
   assert(not e, tostring(e))
-  assert(d == sep)
+  assert(#d == 1)
+  assert(d == sep, "Got " .. string.byte(d))
 end
 
 local function reconnect()
@@ -73,7 +74,7 @@ end
 
 local ENABLE = true
 
-local _ENV = TEST_CASE'echo'                if ENABLE then
+local _ENV = TEST_CASE'echo'                if ENABLE or true then
 local it = IT(_ENV or _M)
 
 function setup()
@@ -290,4 +291,3 @@ RUN(function()
   printf("--------------------------------------------------\n")
 end)
 
-uv.run()
