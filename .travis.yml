@@ -1,6 +1,11 @@
 language: c
 
-sudo: required
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - socat
 
 env:
   global:
@@ -18,7 +23,6 @@ branches:
     - master
 
 before_install:
-  - sudo apt-get install socat
   - source .travis/setenv_lua.sh
   - bash .travis/setup_uv.sh
   - luarocks install lzmq-timer
