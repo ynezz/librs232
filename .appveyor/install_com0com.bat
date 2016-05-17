@@ -11,6 +11,15 @@ if not exist %COM0COM_ROOT%\setupc.exe (
   echo ======================================================
   curl --silent --fail --max-time 120 --connect-timeout 30 -L --output %COM0COM_ROOT%\com0com.cer https://github.com/hybridgroup/rubyserial/raw/appveyor_deps/com0com.cer
   curl --silent --fail --max-time 120 --connect-timeout 30 -L --output setup_com0com_W7_x64_signed.exe https://github.com/hybridgroup/rubyserial/raw/appveyor_deps/setup_com0com_W7_x64_signed.exe
+)
+
+echo ======================================================
+echo install certificate
+echo ======================================================
+CertMgr /add %COM0COM_ROOT%/com0com.cer /s /r localMachine root
+CertMgr /add %COM0COM_ROOT%/com0com.cer /s /r localMachine trustedpublisher
+
+if not exist %COM0COM_ROOT%\setupc.exe (
   echo ======================================================
   echo Install com0com
   echo ======================================================
@@ -22,7 +31,5 @@ echo ======================================================
 echo install virtual serial ports
 echo ======================================================
 cd %COM0COM_ROOT%
-CertMgr /add com0com.cer /s /r localMachine root
-CertMgr /add com0com.cer /s /r localMachine trustedpublisher
 .\setupc.exe --silent --detail-prms install 0 - -
 .\setupc.exe --silent --detail-prms install 1 - -
