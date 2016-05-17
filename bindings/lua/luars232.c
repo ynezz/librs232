@@ -518,7 +518,6 @@ static void create_metatables(lua_State *L, const char *name, const luaL_reg *me
 #endif
 }
 
-RS232_LIB int luaopen_luars232(lua_State *L);
 RS232_LIB int luaopen_luars232(lua_State *L)
 {
 	int i;
@@ -551,4 +550,8 @@ RS232_LIB int luaopen_luars232(lua_State *L)
 	    MODULE_VERSION, MODULE_BUILD, MODULE_TIMESTAMP);
 
 	return 1;
+}
+
+RS232_LIB int luaopen_rs232_core(lua_State *L){
+	return luaopen_luars232(L);
 }

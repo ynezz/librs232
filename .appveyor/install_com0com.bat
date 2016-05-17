@@ -24,7 +24,6 @@ if not exist %COM0COM_ROOT%\setupc.exe (
   echo Install com0com
   echo ======================================================
   setup_com0com_W7_x64_signed.exe /S /D=%COM0COM_ROOT%
-  dir %COM0COM_ROOT%
 )
 
 echo ======================================================
