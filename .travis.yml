@@ -1,5 +1,8 @@
 language: c
 
+python:
+  - "2.7"
+
 sudo: false
 
 addons:
@@ -7,30 +10,42 @@ addons:
     packages:
       - socat
 
-env:
-  global:
-    - LUAROCKS=2.2.2
-  matrix:
-    - LUA=lua5.1
-    # - LUA=lua5.2
-    # - LUA=lua5.3
-    # - LUA=luajit     # latest stable version (2.0.4)
-    # - LUA=luajit2.0  # current head of 2.0 branch
-    # - LUA=luajit2.1  # current head of 2.1 branch
+matrix:
+  include:
+    - compiler: ": Lua51"
+      env: LUA="lua 5.1"
+    - compiler: ": Lua52"
+      env: LUA="lua 5.2"
+    - compiler: ": Lua53"
+      env: LUA="lua 5.3"
+    - compiler: ": LuaJIT20"
+      env: LUA="luajit 2.0"
+    - compiler: ": LuaJIT21"
+      env: LUA="luajit 2.1"
+
+cache:
+  directories:
+    - here
+    - $HOME/.cache/pip
 
 branches:
   only:
     - master
 
 before_install:
-  - source .travis/setenv_lua.sh
-  - bash .travis/setup_uv.sh
-  - luarocks install lzmq-timer
-  - luarocks install https://raw.githubusercontent.com/moteus/lua-lluv/master/rockspecs/lluv-scm-0.rockspec UV_DIR=$TRAVIS_BUILD_DIR/libuv
-  - luarocks install lunitx
+  - export CC=gcc
+  - pip install --user hererocks
+  - hererocks here -r^ --$LUA
+  - export PATH=$PATH:$PWD/here/bin
 
 install:
   - luarocks make rockspecs/rs232-scm-0.rockspec
+
+before_script:
+  - luarocks show lluv       || bash .travis/setup_uv.sh
+  - luarocks show lluv       || luarocks install lluv UV_DIR=$TRAVIS_BUILD_DIR/libuv
+  - luarocks show lzmq-timer || luarocks install lzmq-timer
+  - luarocks show lunitx     || luarocks install lunitx
 
 script:
   - cd $TRAVIS_BUILD_DIR/bindings/lua/test
