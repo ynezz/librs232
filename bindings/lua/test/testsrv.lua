@@ -33,7 +33,7 @@ end
 
 local function run_test_server(control_port, data_port)
   -- this is should be globals
-  rs232     = require "luars232"
+  rs232     = require "rs232.core"
   ztimer    = require "lzmq.timer"
   control   = open_port(control_port)
   data      = open_port(data_port)

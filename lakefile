@@ -1,10 +1,10 @@
-PROJECT = 'luars232'
+PROJECT = 'rs232'
 
 INITLAKEFILE()
 
 DEFINES = L{DEFINES, 'RS232_EXPORT'}
 
-luars232 = c.shared{'luars232',
+luars232 = c.shared{'core',
   src      = {
     J('src', 'rs232.c'),
     J('src', IF(WINDOWS, 'rs232_windows.c', 'rs232_posix.c')),
@@ -20,9 +20,9 @@ luars232 = c.shared{'luars232',
 target('build', luars232)
 
 install = target('install', {
-  file.group{odir=LIBDIR;  src = luars232                                             };
-  file.group{odir=LIBDIR;  src = J('bindings', 'lua', 'rs232.lua'), recurse = true    };
-  file.group{odir=TESTDIR; src = J('bindings', 'lua', 'test'), recurse = true         };
+  file.group{odir=J(LIBDIR, 'rs232');  src = luars232                                             };
+  file.group{odir=LIBDIR;              src = J('bindings', 'lua', 'rs232.lua'), recurse = true    };
+  file.group{odir=TESTDIR;             src = J('bindings', 'lua', 'test'), recurse = true         };
 })
 
 target('test', install, function()

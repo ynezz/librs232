@@ -15,7 +15,6 @@
 * Lua. Export `rs232_in_queue_clear` / `rs232_in_queue` functions.
 * Lua. Add more Lua way module.
 
-
 ##Lua binding
 
 ```Lua

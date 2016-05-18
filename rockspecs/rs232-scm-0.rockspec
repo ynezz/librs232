@@ -12,6 +12,8 @@ description = {
   license    = "MIT/X11",
   maintainer = "Alexey Melnichuk",
   detailed   = [[
+  This library based on`librs232` and provide OO API for `librs232`
+  Also this libray has some bug fixes for `librs232`, but this is not official `librs232` library.
   ]],
 }
 
@@ -29,7 +31,7 @@ build = {
 
   platforms = {
     windows = { modules = {
-      luars232 = {
+      ['rs232.core'] = {
         sources = {
           'src/rs232.c',
           'src/rs232_windows.c',
@@ -39,7 +41,7 @@ build = {
     }},
 
     unix    = { modules = {
-      luars232 = {
+      ['rs232.core'] = {
         sources = {
           'src/rs232.c',
           'src/rs232_posix.c',
@@ -51,7 +53,7 @@ build = {
   },
 
   modules = {
-    luars232 = {
+    ['rs232.core'] = {
       incdirs   = { 'include' },
       defines   = { 'RS232_EXPORT' },
     },

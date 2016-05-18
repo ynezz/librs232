@@ -5,7 +5,7 @@ platform = "linux"
 -- platform = "win32"
 
 
-rs232 = require("luars232")
+rs232 = require("rs232.core")
 
 
 function time_stamp()

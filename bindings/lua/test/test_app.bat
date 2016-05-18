@@ -11,6 +11,8 @@ echo --------------------------------------
 sleep 30
 lua utestcli.lua
 
+set code=%errorlevel%
+
 echo --------------------------------------
 echo Exit %code%
 echo --------------------------------------

@@ -1,7 +1,7 @@
 control_port = arg[1] or CONTROL_PORT or '\\\\.\\CNCB1'
 data_port    = arg[2] or DATA_PORT or '\\\\.\\CNCB0'
 
-local rs232     = require "luars232"
+local rs232     = require "rs232.core"
 local ztimer    = require "lzmq.timer"
 local utils     = require "utils"
 local TEST_CASE = require "lunit".TEST_CASE
