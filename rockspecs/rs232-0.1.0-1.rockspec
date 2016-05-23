@@ -2,8 +2,8 @@ package = "rs232"
 version = "0.1.0-1"
 
 source = {
-  url = "https://github.com/moteus/librs232/archive/v0.1.1.zip",
-  dir = "librs232-0.1.1",
+  url = "https://github.com/moteus/librs232/archive/v0.1.0.zip",
+  dir = "librs232-0.1.0",
 }
 
 description = {
