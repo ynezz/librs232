@@ -69,7 +69,7 @@ end
 
 local ERROR, ERROR_NAMES = select_by_prefix'RS232_ERR_'
 
-local BAUD_NAMES,  BAUD do
+local BAUD_NAMES, BAUD do
 local tmp = select_by_prefix'RS232_BAUD_'
 BAUD_NAMES, BAUD = {}, {}
 
@@ -414,7 +414,7 @@ end
 
 return setmetatable({
   _NAME      = "rs232";
-  _VERSION   = "0.0.1-dev";
+  _VERSION   = "0.1.0";
   _COPYRIGHT = "Copyright (C) 2015-2016 Alexey Melnichuk";
   _LICENSE   = "MIT";
 
