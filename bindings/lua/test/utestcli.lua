@@ -317,8 +317,9 @@ test(1024, 2000)
 end
 
 RUN(function()
-  remote("os.exit()")
+  printf("\n")
   printf("--------------------------------------------------\n")
   printf("-- testing done in %.2fs\n", started:stop()/1000)
   printf("--------------------------------------------------\n")
+  remote("os.exit()")
 end)

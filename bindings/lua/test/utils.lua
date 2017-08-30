@@ -1,7 +1,12 @@
 local lunit = lunit
 local RUN   = lunit and function() end or function (on_exit)
   local res = lunit.run()
-  if on_exit then on_exit() end
+  if on_exit then
+    local ok, err = pcall( on_exit )
+    if not ok then
+      print('ERROR IN ON EXIT: ', err)
+    end
+  end
   if res.errors + res.failed > 0 then
     os.exit(-1)
   end

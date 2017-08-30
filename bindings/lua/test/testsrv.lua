@@ -1,6 +1,8 @@
 control_port = arg[1] or CONTROL_PORT or '\\\\.\\CNCA1'
 data_port    = arg[2] or DATA_PORT or '\\\\.\\CNCA0'
 
+do local _print = print print = function(...) return _print('[server]', ...) end end
+
 local function split_first(str, sep, plain)
   local e, e2 = string.find(str, sep, nil, plain)
   if e then

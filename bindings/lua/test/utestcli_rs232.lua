@@ -287,9 +287,9 @@ control = open_port(control_port)
 data    = open_port(data_port)
 
 RUN(function()
-  remote("ztimer.sleep(500);os.exit()")
+  printf("\n")
   printf("--------------------------------------------------\n")
   printf("-- testing done in %.2fs\n", started:stop()/1000)
   printf("--------------------------------------------------\n")
+  remote("ztimer.sleep(500);os.exit()")
 end)
-

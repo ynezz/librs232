@@ -106,13 +106,9 @@ local function socat()
 end
 
 local spawn_lua do
-  local LUA
-  for i = 0, -100, -1 do
-    if not arg[i-1] then
-      LUA = arg[i]
-      break
-    end
-  end
+  local i = 0 while arg[i-1] do i = i - 1 end
+  local LUA = arg[i]
+
   spawn_lua = function(...)
     return spawn(LUA, ...)
   end
@@ -162,7 +158,7 @@ end})
 kill(pid)
 
 io.write('test_gc\n')
-local _, status3 = spawn_lua({'test_gc', control_port_1}, {nil, function(line)
+local _, status3 = spawn_lua({'test_gc.lua', control_port_1}, {nil, function(line)
   io.write(line)
 end})
 
