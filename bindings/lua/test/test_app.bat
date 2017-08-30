@@ -39,5 +39,16 @@ echo --------------------------------------
 
 taskkill /F /IM lua.exe
 type testsrv.log
+sleep 30
+
+echo --------------------------------------
+echo test gc
+echo --------------------------------------
+
+lua test_gc.lua
+
+if "%code%"=="0" (
+	set code=%errorlevel%
+)
 
 exit /B %code%

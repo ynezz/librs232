@@ -328,10 +328,11 @@ static int lua_port_close(lua_State *L)
 /* __gc */
 static int lua_port_gc(lua_State *L)
 {
-	struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	struct rs232_port_t **p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 
-	if (p == NULL) {
-		rs232_end(p);
+	if (*p != NULL) {
+		rs232_end(*p);
+		*p = NULL;
 	}
 
 	return 1;

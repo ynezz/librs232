@@ -161,6 +161,11 @@ end})
 
 kill(pid)
 
+io.write('test_gc\n')
+local _, status3 = spawn_lua({'test_gc', control_port_1}, {nil, function(line)
+  io.write(line)
+end})
+
 if status1 ~= 0 or status2 ~= 0 then
   os.exit(-1)
 end
