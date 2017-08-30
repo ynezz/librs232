@@ -9,6 +9,7 @@ local p, e = rs232.port('COM3',{
   rts          = 'ON';
 })
 
+print(p:open())
 print(p:write('AT\r\n'))
 print(p:read(64, 5000))
 p:close()
