@@ -2,6 +2,9 @@ package.path = "../?.lua;" .. package.path
 
 local rs232 = require "rs232"
 
+do local _print = print print = function(...) return _print('[server]', ...) end end
+do local _exit = os.exit os.exit = function(...) io.flush() return _exit(...) end end
+
 control_port = arg[1] or CONTROL_PORT or 'CNCA1'
 data_port    = arg[2] or DATA_PORT or 'CNCA0'
 

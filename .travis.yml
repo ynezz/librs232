@@ -13,10 +13,10 @@ addons:
 matrix:
   include:
     - env: LUA="lua 5.1"
-    # - env: LUA="lua 5.2"
-    # - env: LUA="lua 5.3"
-    # - env: LUA="luajit 2.0"
-    # - env: LUA="luajit 2.1"
+    - env: LUA="lua 5.2"
+    - env: LUA="lua 5.3"
+    - env: LUA="luajit 2.0"
+    - env: LUA="luajit 2.1"
 
 cache:
   directories:
@@ -53,14 +53,14 @@ script:
   - lua testsrv.lua /dev/pts/1 /dev/pts/3 > ./testsrv.log &
   - sleep 5
   - lua utestcli.lua /dev/pts/2 /dev/pts/4
-  - cat ./testsrv.log
+  - tail -100 ./testsrv.log
   - kill -9 $(pidof lua) || echo 'ignore'
   - sleep 5
   ############################################
   - lua testsrv_rs232.lua /dev/pts/1 /dev/pts/3 > ./testsrv.log &
   - sleep 5
   - lua utestcli_rs232.lua /dev/pts/2 /dev/pts/4
-  - cat ./testsrv.log
+  - tail -100 ./testsrv.log
   - kill -9 $(pidof lua) || echo 'ignore'
   - sleep 5
   ############################################
