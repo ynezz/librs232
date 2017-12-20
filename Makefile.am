@@ -5,5 +5,5 @@ $(OBJECTS): libtool
 libtool: $(LIBTOOL_DEPS)
 	$(SHELL) ./config.status --recheck
 
-EXTRA_DIST = windows/vs2k5/librs232/*
+EXTRA_DIST = windows/vs2k5/librs232/* m4/ax_lua.m4
 
