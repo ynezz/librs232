@@ -28,7 +28,7 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_C_CONST
 AC_EXEEXT
-AM_PROG_LIBTOOL
+LT_INIT()
 AC_SUBST(LIBTOOL_DEPS)
 
 AC_ARG_ENABLE(lua,          [  --disable-lua             Turn off building of Lua library  (default=compiled if found)],enable_lua=$enableval,enable_lua=yes)
