@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "librs232", "librs232\librs232.vcproj", "{37C96F5A-0873-4DB8-B0E5-6E5E99167981}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "librs232lua", "librs232lua\librs232lua.vcproj", "{A38E83A2-2B1B-406B-8834-118C93EB37B2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcproj", "{4D246D06-6B8B-4A16-9C37-1B37C1956038}"
+	ProjectSection(ProjectDependencies) = postProject
+		{37C96F5A-0873-4DB8-B0E5-6E5E99167981} = {37C96F5A-0873-4DB8-B0E5-6E5E99167981}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{37C96F5A-0873-4DB8-B0E5-6E5E99167981}.Debug|Win32.ActiveCfg = Debug|Win32
+		{37C96F5A-0873-4DB8-B0E5-6E5E99167981}.Debug|Win32.Build.0 = Debug|Win32
+		{37C96F5A-0873-4DB8-B0E5-6E5E99167981}.Release|Win32.ActiveCfg = Release|Win32
+		{37C96F5A-0873-4DB8-B0E5-6E5E99167981}.Release|Win32.Build.0 = Release|Win32
+		{A38E83A2-2B1B-406B-8834-118C93EB37B2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A38E83A2-2B1B-406B-8834-118C93EB37B2}.Debug|Win32.Build.0 = Debug|Win32
+		{A38E83A2-2B1B-406B-8834-118C93EB37B2}.Release|Win32.ActiveCfg = Release|Win32
+		{A38E83A2-2B1B-406B-8834-118C93EB37B2}.Release|Win32.Build.0 = Release|Win32
+		{4D246D06-6B8B-4A16-9C37-1B37C1956038}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4D246D06-6B8B-4A16-9C37-1B37C1956038}.Debug|Win32.Build.0 = Debug|Win32
+		{4D246D06-6B8B-4A16-9C37-1B37C1956038}.Release|Win32.ActiveCfg = Release|Win32
+		{4D246D06-6B8B-4A16-9C37-1B37C1956038}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

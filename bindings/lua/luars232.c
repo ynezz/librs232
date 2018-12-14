@@ -89,6 +89,11 @@ static struct {
 	{ "RS232_ERR_TIMEOUT", RS232_ERR_TIMEOUT },
 	{ "RS232_ERR_IOCTL", RS232_ERR_IOCTL },
 	{ "RS232_ERR_PORT_CLOSED", RS232_ERR_PORT_CLOSED },
+	{ "RS232_ERR_BREAK", RS232_ERR_BREAK },
+	{ "RS232_ERR_FRAME", RS232_ERR_FRAME },
+	{ "RS232_ERR_PARITY", RS232_ERR_PARITY },
+	{ "RS232_ERR_RXOVERFLOW", RS232_ERR_RXOVERFLOW },
+	{ "RS232_ERR_OVERRUN", RS232_ERR_OVERRUN },
 	{ NULL, 0 }
 };
 
@@ -154,7 +159,8 @@ static int lua_port_read(lua_State *L)
 	unsigned int timeout = 0;
 	unsigned int len = 0;
 	unsigned int bytes_read = 0;
-	unsigned char *data = NULL;
+	unsigned char tmp[128];
+	unsigned char *data = tmp;
 	struct rs232_port_t *p = NULL;
 
 	p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
@@ -168,20 +174,26 @@ static int lua_port_read(lua_State *L)
 	}
 
 	argc = lua_gettop(L);
+	len = (unsigned int) luaL_checkinteger(L, 1);
+	if(len > sizeof(tmp)){
+		data = (unsigned char*) malloc(len);
+		memset(data, 0, len);
+	}
+
 	switch (argc) {
 	case 1:
-		len = (unsigned int) luaL_checkinteger(L, 1);
-		data = (unsigned char*) malloc(len * sizeof(unsigned char *));
-		memset(data, 0, len);
 		ret = rs232_read(p, data, len, &bytes_read);
 		break;
 	case 2:
 	case 3:
-		len = (unsigned int) luaL_checknumber(L, 1);
-		data = (unsigned char*) malloc(len * sizeof(unsigned char *));
-		memset(data, 0, len);
 		timeout = (unsigned int) luaL_checknumber(L, 2);
-		forced = luaL_optint(L, 3, 0);
+		if(lua_isnumber(L, 3))
+			forced = (lua_tointeger(L, 3) > 0) ? 1 : 0;
+			else if (!lua_isnoneornil(L, 3)) {
+				luaL_checktype(L, 3, LUA_TBOOLEAN);
+				forced = lua_toboolean(L, 3);
+			}
+
 		if (forced > 0)
 			ret = rs232_read_timeout_forced(p, data, len, &bytes_read, timeout);
 		else
@@ -203,11 +215,55 @@ static int lua_port_read(lua_State *L)
 	else
 		lua_pushnil(L);
 
-	if (data)
+	if (data != tmp)
 		free(data);
 
 	lua_pushinteger(L, bytes_read);
 	return 3;
+}
+
+/* 
+ * error, bytes = port:in_queue()
+ */
+static int lua_port_in_queue(lua_State *L)
+{
+	int ret = 0;
+	struct rs232_port_t *p = NULL;
+	unsigned int in_bytes = 0;
+
+	p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	lua_remove(L, 1);
+
+	if (p == NULL || !rs232_port_open(p)) {
+		lua_pushinteger(L, RS232_ERR_PORT_CLOSED);
+		lua_pushinteger(L, 0);
+		return 2;
+	}
+
+	ret = rs232_in_queue(p, &in_bytes);
+	lua_pushinteger(L, ret);
+	lua_pushinteger(L, in_bytes);
+	return 2;
+}
+
+/* 
+ * error = port:in_queue_clear()
+ */
+static int lua_port_in_queue_clear(lua_State *L)
+{
+	struct rs232_port_t *p = NULL;
+
+	p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	lua_remove(L, 1);
+
+	if (p == NULL || !rs232_port_open(p)) {
+		lua_pushinteger(L, RS232_ERR_PORT_CLOSED);
+		return 1;
+	}
+
+	rs232_in_queue_clear(p);
+	lua_pushinteger(L, RS232_ERR_NOERROR);
+	return 1;
 }
 
 /*
@@ -272,10 +328,11 @@ static int lua_port_close(lua_State *L)
 /* __gc */
 static int lua_port_gc(lua_State *L)
 {
-	struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
+	struct rs232_port_t **p = (struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE);
 
-	if (p == NULL) {
-		rs232_end(p);
+	if (*p != NULL) {
+		rs232_end(*p);
+		*p = NULL;
 	}
 
 	return 1;
@@ -352,7 +409,7 @@ static int lua_port_strerror(lua_State *L)
 	static int lua_port_set_##type(lua_State *L) \
 	{ \
 		struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE); \
-		lua_pushnumber(L, rs232_set_##type(p, (unsigned int) luaL_checknumber(L, 2))); \
+		lua_pushinteger(L, rs232_set_##type(p, (unsigned int) luaL_checknumber(L, 2))); \
 		return 1; \
 	} \
 
@@ -360,7 +417,7 @@ static int lua_port_strerror(lua_State *L)
 	static int lua_port_get_##type(lua_State *L) \
 	{ \
 		struct rs232_port_t *p = *(struct rs232_port_t**) luaL_checkudata(L, 1, MODULE_NAMESPACE); \
-		lua_pushnumber(L, rs232_get_##type(p)); \
+		lua_pushinteger(L, rs232_get_##type(p)); \
 		return 1; \
 	}
 
@@ -411,6 +468,8 @@ static luaL_reg port_methods[] = {
 	{ "flush", lua_port_flush },
 	{ "device", lua_port_device },
 	{ "fd", lua_port_fd },
+	{ "in_queue", lua_port_in_queue },
+	{ "in_queue_clear", lua_port_in_queue_clear },
 	/* baud */
 	{ "baud_rate", lua_port_get_baud },
 	{ "baud_rate_tostring", lua_port_get_strbaud },
@@ -460,7 +519,6 @@ static void create_metatables(lua_State *L, const char *name, const luaL_reg *me
 #endif
 }
 
-RS232_LIB int luaopen_luars232(lua_State *L);
 RS232_LIB int luaopen_luars232(lua_State *L)
 {
 	int i;
@@ -493,4 +551,8 @@ RS232_LIB int luaopen_luars232(lua_State *L)
 	    MODULE_VERSION, MODULE_BUILD, MODULE_TIMESTAMP);
 
 	return 1;
+}
+
+RS232_LIB int luaopen_rs232_core(lua_State *L){
+	return luaopen_luars232(L);
 }

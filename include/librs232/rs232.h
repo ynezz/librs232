@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -30,7 +30,7 @@
 #include <time.h>
 
 #define RS232_STRLEN 512
-#define RS232_STRLEN_DEVICE 30
+#define RS232_STRLEN_DEVICE 256
 
 #ifdef __linux__
 #define RS232_PORT_POSIX "/dev/ttyS0"
@@ -40,13 +40,18 @@
 
 #define RS232_PORT_WIN32 "COM1"
 
-#if defined(WIN32) || defined(UNDER_CE)
+#if defined(WIN32) || defined(UNDER_CE) || defined(_MSC_VER)
  #include "librs232/rs232_windows.h"
- #pragma warning(disable:4996)
- #define snprintf _snprintf
+ #ifdef _MSC_VER
+  #pragma warning(disable:4996)
+  #define snprintf _snprintf
+ #endif
 #else
  #include "librs232/rs232_posix.h"
 #endif
+
+/*Ensure destination string is zero terminated*/
+#define strncpyz(dest, src, size) strncpy(dest, src, size); dest[size-1]='\0'
 
 #ifdef RS232_DEBUG
 const char* rs232_hex_dump(const void *data, unsigned int len);
@@ -160,6 +165,11 @@ enum rs232_error_e {
 	RS232_ERR_TIMEOUT,
 	RS232_ERR_IOCTL,
 	RS232_ERR_PORT_CLOSED,
+	RS232_ERR_BREAK,
+	RS232_ERR_FRAME,
+	RS232_ERR_PARITY,
+	RS232_ERR_RXOVERFLOW,
+	RS232_ERR_OVERRUN,
 	RS232_ERR_MAX
 };
 
@@ -200,8 +210,8 @@ RS232_LIB unsigned int rs232_read_timeout(struct rs232_port_t *p, unsigned char 
 RS232_LIB unsigned int rs232_read_timeout_forced(struct rs232_port_t *p, unsigned char *buf, unsigned int buf_len, unsigned int *read_len, unsigned int timeout);
 RS232_LIB unsigned int rs232_write(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len, unsigned int *write_len);
 RS232_LIB unsigned int rs232_write_timeout(struct rs232_port_t *p, const unsigned char *buf, unsigned int buf_len, unsigned int *write_len, unsigned int timeout);
-RS232_LIB unsigned int rs232_in_qeue(struct rs232_port_t *p, unsigned int *in_bytes);
-RS232_LIB void rs232_in_qeue_clear(struct rs232_port_t *p);
+RS232_LIB unsigned int rs232_in_queue(struct rs232_port_t *p, unsigned int *in_bytes);
+RS232_LIB void rs232_in_queue_clear(struct rs232_port_t *p);
 RS232_LIB const char * rs232_to_string(struct rs232_port_t *p);
 RS232_LIB const char * rs232_strerror(unsigned int error);
 RS232_LIB const char * rs232_strbaud(unsigned int baud);

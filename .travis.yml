@@ -1,0 +1,76 @@
+language: c
+
+python:
+  - "2.7"
+
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - socat
+
+matrix:
+  include:
+    - env: LUA="lua 5.1"
+    - env: LUA="lua 5.2"
+    - env: LUA="lua 5.3"
+    - env: LUA="luajit 2.0"
+    - env: LUA="luajit 2.1"
+
+cache:
+  directories:
+    - here
+    - $HOME/.cache/pip
+
+branches:
+  only:
+    - master
+
+before_install:
+  - export CC=gcc
+  - pip install --user hererocks
+  - hererocks here -r^ --$LUA
+  - export PATH=$PATH:$PWD/here/bin
+
+install:
+  - luarocks make rockspecs/rs232-scm-0.rockspec
+
+before_script:
+  - luarocks show lluv        > /dev/null 2>&1 || bash .travis/setup_uv.sh
+  - luarocks show lluv        > /dev/null 2>&1 || luarocks install lluv UV_DIR=$TRAVIS_BUILD_DIR/libuv
+  - luarocks show lzmq-timer  > /dev/null 2>&1 || luarocks install lzmq-timer
+  - luarocks show lunitx      > /dev/null 2>&1 || luarocks install lunitx
+
+script:
+  - cd $TRAVIS_BUILD_DIR/bindings/lua/test
+  - lua -lrs232 -v
+  # - lua test_socat.lua
+  - socat -d -d PTY PTY &
+  - socat -d -d PTY PTY &
+  - sleep 5
+  ############################################
+  - lua testsrv.lua /dev/pts/1 /dev/pts/3 > ./testsrv.log &
+  - sleep 5
+  - lua utestcli.lua /dev/pts/2 /dev/pts/4
+  - tail -100 ./testsrv.log
+  - kill -9 $(pidof lua) || echo 'ignore'
+  - sleep 5
+  ############################################
+  - lua testsrv_rs232.lua /dev/pts/1 /dev/pts/3 > ./testsrv.log &
+  - sleep 5
+  - lua utestcli_rs232.lua /dev/pts/2 /dev/pts/4
+  - tail -100 ./testsrv.log
+  - kill -9 $(pidof lua) || echo 'ignore'
+  - sleep 5
+  ############################################
+  - lua test_gc.lua /dev/pts/1
+
+before_cache:
+  - luarocks remove rs232
+  - rm -f /home/travis/.cache/pip/log/debug.log
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always

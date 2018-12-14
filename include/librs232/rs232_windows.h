@@ -41,6 +41,9 @@ struct rs232_windows_t {
 	unsigned int w_timeout;
 	unsigned int r_buffer;
 	unsigned int w_buffer;
+	OVERLAPPED oWait;
+	unsigned char wait_progress;
+	DWORD wait_mask;
 };
 
 #define GET_PORT_TIMEOUTS(fd, t) \

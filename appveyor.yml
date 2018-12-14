@@ -1,0 +1,68 @@
+version: 0.0.1.{build}-test
+
+os:
+- Windows Server 2012 R2
+
+shallow_clone: true
+
+environment:
+  LR_EXTERNAL: c:\external
+
+  matrix:
+    - LUA: "lua 5.1"
+    # - LUA: "lua 5.2"
+    # - LUA: "lua 5.3"
+
+platform:
+  - x64
+  # - x86
+  # - mingw
+
+# matrix:
+#   allow_failures:
+#     - platform: mingw
+
+cache:
+  - c:\hererocks -> appveyor.yml
+  - c:\external -> appveyor.yml
+  - c:\com0com
+
+install:
+  - echo "Setup..."
+  - set PATH=C:\Python27\Scripts;%LR_EXTERNAL%;%PATH%
+  - if /I "%platform%"=="x86" set HR_TARGET=vs_32
+  - if /I "%platform%"=="x64" set HR_TARGET=vs_64
+  - if /I "%platform%"=="mingw" set HR_TARGET=mingw
+  - if /I "%platform%"=="mingw" set PATH=C:\MinGW\bin;%PATH%
+  - if not exist "%LR_EXTERNAL%" (
+      mkdir "%LR_EXTERNAL%" &&
+      mkdir "%LR_EXTERNAL%\lib" &&
+      mkdir "%LR_EXTERNAL%\include"
+    )
+  - if not exist c:\hererocks (
+      pip install hererocks &&
+      hererocks c:\hererocks --%LUA% --target %HR_TARGET% -rlatest
+    )
+  - call c:\hererocks\bin\activate
+
+before_build:
+  # external deps
+
+build_script:
+  - echo "Making..."
+  - luarocks make rockspecs/rs232-scm-0.rockspec
+
+before_test:
+  # test deps
+  - call .appveyor\install_com0com.bat
+  - luarocks show lzmq-timer >nul 2>&1 || luarocks install lzmq-timer
+  - luarocks show lunitx     >nul 2>&1 || luarocks install lunitx
+
+test_script:
+  - echo "Testing..."
+  - cd bindings\lua\test
+  - call test_app.bat
+
+after_test:
+  # - cd %APPVEYOR_BUILD_FOLDER%
+  # - .appveyor\pack_artifact.bat lua-curl bin-rock
